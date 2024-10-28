@@ -15,6 +15,7 @@ import { HealthModule } from '@res/health/health.module';
 import { UsersModule } from '@res/users/users.module';
 import { AppController } from '@src/app.controller';
 import { TarotsModule } from '@res/tarots/tarots.module';
+import { FortunesModule } from '@res/fortunes/fortunes.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { TarotsModule } from '@res/tarots/tarots.module';
     TerminusModule,
     UsersModule,
     TarotsModule,
+    FortunesModule,
   ],
 
   controllers: [AppController, HealthController],

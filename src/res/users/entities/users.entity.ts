@@ -13,6 +13,7 @@ import { UsersLanguage } from '@res/users/entities/users_language.entity';
 import { UsersToken } from '@res/users/entities/users_token.entity';
 import { BaseEntity } from '@/src/common/entities/base.entity';
 import { SavedUserTarotCards } from '@res/tarots/entities/saved_user_tarot_cards.entity';
+import { SavedSandbars } from '@res/fortunes/entities/saved_sandbars.entity';
 
 @Entity('users')
 export class Users extends BaseEntity {
@@ -61,4 +62,9 @@ export class Users extends BaseEntity {
     cascade: true,
   })
   savedCards: SavedUserTarotCards[];
+
+  @OneToMany(() => SavedSandbars, (savedSandbar) => savedSandbar.user, {
+    cascade: true,
+  })
+  savedSandbars: SavedSandbars[];
 }
