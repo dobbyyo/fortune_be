@@ -2,6 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -11,6 +12,7 @@ import { UsersPassword } from '@res/users/entities/users_password.entity';
 import { UsersLanguage } from '@res/users/entities/users_language.entity';
 import { UsersToken } from '@res/users/entities/users_token.entity';
 import { BaseEntity } from '@/src/common/entities/base.entity';
+import { SavedUserTarotCards } from '@res/tarots/entities/saved_user_tarot_cards.entity';
 
 @Entity('users')
 export class Users extends BaseEntity {
@@ -54,4 +56,9 @@ export class Users extends BaseEntity {
   @OneToOne(() => UsersToken)
   @JoinColumn()
   token: UsersToken;
+
+  @OneToMany(() => SavedUserTarotCards, (savedCard) => savedCard.user, {
+    cascade: true,
+  })
+  savedCards: SavedUserTarotCards[];
 }
