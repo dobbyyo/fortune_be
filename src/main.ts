@@ -1,14 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigType } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
-import { AppModule } from './app.module';
-import appConfig from './config/app.config';
-import { winstonLogger } from './utils/logger.util';
-import { CustomValidationPipe } from './pipe/validation.pipe';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import * as session from 'express-session';
 import { doubleCsrf } from 'csrf-csrf';
+
+import { AppModule } from '@src/app.module';
+import appConfig from '@src/config/app.config';
+import { winstonLogger } from '@src/utils/logger.util';
+import { CustomValidationPipe } from '@src/pipe/validation.pipe';
 
 declare const module: any;
 

@@ -1,18 +1,19 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import appConfig from './config/app.config';
-import dbConfig from './config/db.config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { LoggingInterceptor } from './interceptor/logger.interceptor';
-import { LoggingMiddleware } from './middleware/logger.middleware';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { HealthController } from './res/health/health.controller';
-import { HealthModule } from './res/health/health.module';
 import { TerminusModule } from '@nestjs/terminus';
+
+import { AppService } from '@src/app.service';
+import appConfig from '@src/config/app.config';
+import dbConfig from '@src/config/db.config';
+import { LoggingInterceptor } from '@src/interceptor/logger.interceptor';
+import { LoggingMiddleware } from '@src/middleware/logger.middleware';
+import { HealthController } from '@res/health/health.controller';
+import { HealthModule } from '@res/health/health.module';
+import { UsersModule } from '@res/users/users.module';
+import { AppController } from '@src/app.controller';
 
 @Module({
   imports: [
@@ -42,7 +43,10 @@ import { TerminusModule } from '@nestjs/terminus';
         database: configService.get<string>('database.database'),
         synchronize: configService.get<boolean>('database.synchronize'),
         logging: configService.get<boolean>('database.logging'),
-        entities: [__dirname + '/../**/*.entity{.ts,.js}'], // 엔티티 경로 설정
+        entities:
+          process.env.NODE_ENV === 'production'
+            ? [__dirname + '/**/*.entity.js'] // 배포 환경: dist 경로
+            : [__dirname + '/../src/res/**/*.entity{.ts,.js}'], // 개발 환경: src 경로
         migrations: configService.get<string[]>('database.migrations'), // 마이그레이션 경로 설정
         migrationsTableName: configService.get<string>(
           'database.migrationsTableName',
@@ -52,6 +56,7 @@ import { TerminusModule } from '@nestjs/terminus';
 
     HealthModule,
     TerminusModule,
+    UsersModule,
   ],
 
   controllers: [AppController, HealthController],
