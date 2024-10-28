@@ -16,6 +16,8 @@ import { UsersModule } from '@res/users/users.module';
 import { AppController } from '@src/app.controller';
 import { TarotsModule } from '@res/tarots/tarots.module';
 import { FortunesModule } from '@res/fortunes/fortunes.module';
+import { DreamsModule } from '@res/dreams/dreams.module';
+import { NamingsModule } from '@res/namings/namings.module';
 
 @Module({
   imports: [
@@ -61,6 +63,8 @@ import { FortunesModule } from '@res/fortunes/fortunes.module';
     UsersModule,
     TarotsModule,
     FortunesModule,
+    DreamsModule,
+    NamingsModule,
   ],
 
   controllers: [AppController, HealthController],

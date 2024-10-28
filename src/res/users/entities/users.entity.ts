@@ -14,6 +14,8 @@ import { UsersToken } from '@res/users/entities/users_token.entity';
 import { BaseEntity } from '@/src/common/entities/base.entity';
 import { SavedUserTarotCards } from '@res/tarots/entities/saved_user_tarot_cards.entity';
 import { SavedSandbars } from '@res/fortunes/entities/saved_sandbars.entity';
+import { SavedDreamInterpretation } from '@res/dreams/entities/saved_dream_interpretation.entity';
+import { SavedNaming } from '@res/namings/entities/saved_naming.entity';
 
 @Entity('users')
 export class Users extends BaseEntity {
@@ -67,4 +69,14 @@ export class Users extends BaseEntity {
     cascade: true,
   })
   savedSandbars: SavedSandbars[];
+
+  @OneToMany(() => SavedDreamInterpretation, (savedDream) => savedDream.user, {
+    cascade: true,
+  })
+  savedDreamInterpretations: SavedDreamInterpretation[];
+
+  @OneToMany(() => SavedNaming, (savedNaming) => savedNaming.user, {
+    cascade: true,
+  })
+  savedNamings: SavedNaming[];
 }
