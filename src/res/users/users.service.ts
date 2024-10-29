@@ -1,26 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from '@res/users/dto/create-user.dto';
-import { UpdateUserDto } from '@res/users/dto/update-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Users } from '@res/users/entities/users.entity';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(
+    @InjectRepository(Users)
+    private readonly userRepository: Repository<Users>,
+  ) {}
+
+  async findByEmail(email: string): Promise<Users | undefined> {
+    return await this.userRepository.findOne({ where: { email } });
   }
 
-  findAll() {
-    return `This action returns all users`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async createUser(userDto: Partial<Users>): Promise<Users> {
+    // 필요한 필드가 userDto에 포함되어 있는지 확인 후 객체 생성
+    const newUser = this.userRepository.create(userDto); // 단일 객체 생성
+    return await this.userRepository.save(newUser); // 단일 객체 저장
   }
 }

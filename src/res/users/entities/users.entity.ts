@@ -10,7 +10,6 @@ import { UsersProfile } from '@res/users/entities/users_profile.entity';
 import { UsersNotification } from '@res/users/entities/users_notification.entity';
 import { UsersPassword } from '@res/users/entities/users_password.entity';
 import { UsersLanguage } from '@res/users/entities/users_language.entity';
-import { UsersToken } from '@res/users/entities/users_token.entity';
 import { BaseEntity } from '@/src/common/entities/base.entity';
 import { SavedUserTarotCards } from '@res/tarots/entities/saved_user_tarot_cards.entity';
 import { SavedSandbars } from '@res/fortunes/entities/saved_sandbars.entity';
@@ -55,10 +54,6 @@ export class Users extends BaseEntity {
   @OneToOne(() => UsersLanguage)
   @JoinColumn()
   language: UsersLanguage;
-
-  @OneToOne(() => UsersToken)
-  @JoinColumn()
-  token: UsersToken;
 
   @OneToMany(() => SavedUserTarotCards, (savedCard) => savedCard.user, {
     cascade: true,

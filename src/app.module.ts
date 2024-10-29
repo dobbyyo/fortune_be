@@ -18,7 +18,11 @@ import { TarotsModule } from '@res/tarots/tarots.module';
 import { FortunesModule } from '@res/fortunes/fortunes.module';
 import { DreamsModule } from '@res/dreams/dreams.module';
 import { NamingsModule } from '@res/namings/namings.module';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { RedisService } from './res/redis/redis.service';
+import { AuthModule } from './res/auth/auth.module';
 
+console.log('asd', __dirname);
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,11 +33,18 @@ import { NamingsModule } from '@res/namings/namings.module';
     }),
 
     ThrottlerModule.forRoot([
+      // 설명: 요청 제한을 설정합니다.
       {
         ttl: 60, // 설명: 요청 제한 시간(초)을 설정합니다. 기본값은 60초입니다.
         limit: 10, // 설명: 요청 제한 횟수를 설정합니다. 기본값은 10입니다.
       },
     ]),
+    RedisModule.forRoot({
+      config: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -65,6 +76,7 @@ import { NamingsModule } from '@res/namings/namings.module';
     FortunesModule,
     DreamsModule,
     NamingsModule,
+    AuthModule,
   ],
 
   controllers: [AppController, HealthController],
@@ -74,6 +86,7 @@ import { NamingsModule } from '@res/namings/namings.module';
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
     },
+    RedisService,
   ],
 })
 export class AppModule implements NestModule {
