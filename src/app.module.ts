@@ -39,11 +39,16 @@ console.log('asd', __dirname);
         limit: 10, // 설명: 요청 제한 횟수를 설정합니다. 기본값은 10입니다.
       },
     ]),
-    RedisModule.forRoot({
-      config: {
-        host: 'localhost',
-        port: 6379,
-      },
+
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        config: {
+          host: configService.get<string>('REDIS_HOST'),
+          port: configService.get<number>('REDIS_PORT'),
+        },
+      }),
     }),
 
     TypeOrmModule.forRootAsync({
@@ -58,10 +63,7 @@ console.log('asd', __dirname);
         database: configService.get<string>('database.database'),
         synchronize: configService.get<boolean>('database.synchronize'),
         logging: configService.get<boolean>('database.logging'),
-        entities:
-          process.env.NODE_ENV === 'production'
-            ? [__dirname + '/**/*.entity.js'] // 배포 환경: dist 경로
-            : [__dirname + '/../src/res/**/*.entity{.ts,.js}'], // 개발 환경: src 경로
+        entities: [__dirname + '/res/**/entities/*.entity{.ts,.js}'], // 엔티티 경로 설정
         migrations: configService.get<string[]>('database.migrations'), // 마이그레이션 경로 설정
         migrationsTableName: configService.get<string>(
           'database.migrationsTableName',

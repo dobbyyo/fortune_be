@@ -10,6 +10,7 @@ module.exports = function (options, webpack) {
         allowlist: ['webpack/hot/poll?100'],
       }),
     ],
+
     plugins: [
       ...options.plugins,
       new webpack.HotModuleReplacementPlugin(),

@@ -10,6 +10,6 @@ export default registerAs('database', () => {
     synchronize: process.env.DATABASE_SYNCHRONIZE,
     migrations: [__dirname + '../migrations/*{.ts,.js}'],
     migrationsTableName: 'migrations',
-    logging: process.env.DATABASE_LOGGING === 'true',
+    logging: process.env.DATABASE_LOGGING,
   };
 });

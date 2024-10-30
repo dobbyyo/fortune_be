@@ -3,6 +3,8 @@
 # Node.js 18 버전의 경량화된 Alpine 이미지 사용
 FROM node:18-alpine
 
+ENV NODE_ENV=development
+
 # 작업 디렉토리 설정
 WORKDIR /usr/src/app
 

@@ -14,9 +14,7 @@ import { CustomValidationPipe } from '@src/pipe/validation.pipe';
 declare const module: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: false,
-  });
+  const app = await NestFactory.create(AppModule);
   app.useLogger(winstonLogger);
 
   const config = app.get<ConfigType<typeof appConfig>>(appConfig.KEY);
