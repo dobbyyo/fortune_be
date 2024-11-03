@@ -13,6 +13,7 @@ import { Request, Response } from 'express';
 import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginEmailDto } from './dto/login-email.dto';
 import { AuthenticatedGuard } from '@/src/guards/authenticated.guard';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -36,20 +37,26 @@ export class AuthController {
   @UseGuards(AuthenticatedGuard) // 로그인 상태에서는 접근 불가
   @Post('login')
   async login(
-    @Body() loginemailDto: LoginEmailDto,
     @Headers('csrf-token') csrfToken: string, // 요청 헤더에서 CSRF 토큰을 가져옴
-    @Req() req: Request,
+    @Body() loginemailDto: LoginEmailDto,
   ) {
-    console.log('loginemailDto', loginemailDto);
-    console.log('req', req.user);
-    return this.authService.login(req.user);
+    const user = await this.authService.validateUserByEmail(
+      loginemailDto.email,
+    );
+
+    return this.authService.login(user);
   }
 
   @ApiOperation({ summary: '회원가입' })
   @ApiResponse({ status: 200, description: '회원가입 성공' })
   @ApiResponse({ status: 400, description: 'Fail' })
+  @UseGuards(AuthenticatedGuard) // 로그인 상태에서는 접근 불가
   @Post('register')
-  async register(@Req() req: Request) {
+  async register(
+    @Body() createUserDto: CreateUserDto,
+    @Headers('csrf-token') csrfToken: string,
+    @Req() req: Request,
+  ) {
     return this.authService.register(req.body);
   }
 

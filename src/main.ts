@@ -8,6 +8,7 @@ import appConfig from '@src/config/app.config';
 import { winstonLogger } from '@src/utils/logger.util';
 import { CustomValidationPipe } from '@src/pipe/validation.pipe';
 import { AllExceptionsFilter } from './filters/exception.filter';
+import * as express from 'express';
 
 declare const module: any;
 
@@ -17,11 +18,10 @@ async function bootstrap() {
 
   const config = app.get<ConfigType<typeof appConfig>>(appConfig.KEY);
 
-  console.log('config', config.APP_SESSION_SECRET);
   // 세션 미들웨어 설정
 
   app.use(helmet()); // 보안을 위한 헤더 설정
-  // app.use(cookieParser()); // 쿠키 파서 미들웨어 등록
+  app.use(express.urlencoded({ extended: true })); // body-parser 설정
 
   app.useGlobalPipes(new CustomValidationPipe()); // 전역 유효성 검사 파이프 등록
   app.enableCors({
