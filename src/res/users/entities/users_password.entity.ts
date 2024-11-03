@@ -1,8 +1,8 @@
 import { Entity, PrimaryColumn, Column, OneToOne } from 'typeorm';
-import { Users } from '@res/users/entities/users.entity';
+import { UsersEntity } from '@res/users/entities/users.entity';
 
 @Entity('users_password')
-export class UsersPassword {
+export class UsersPasswordEntity {
   @PrimaryColumn()
   user_id: number;
 
@@ -12,6 +12,6 @@ export class UsersPassword {
   @Column({ type: 'varchar', nullable: false })
   hash_password: string;
 
-  @OneToOne(() => Users, (user) => user.password, { onDelete: 'CASCADE' })
-  user: Users;
+  @OneToOne(() => UsersEntity, (user) => user.password, { onDelete: 'CASCADE' })
+  user: UsersEntity;
 }

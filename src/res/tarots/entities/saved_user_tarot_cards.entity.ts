@@ -6,11 +6,11 @@ import {
   JoinColumn,
   BaseEntity,
 } from 'typeorm';
-import { Users } from '@res/users/entities/users.entity';
-import { TarotCards } from '@res/tarots/entities/tarot_cards.entity';
+import { UsersEntity } from '@res/users/entities/users.entity';
+import { TarotCardsEntity } from '@res/tarots/entities/tarot_cards.entity';
 
 @Entity('saved_user_tarot_cards')
-export class SavedUserTarotCards extends BaseEntity {
+export class SavedUserTarotCardsEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -41,11 +41,11 @@ export class SavedUserTarotCards extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   card_meaning: string;
 
-  @ManyToOne(() => Users, (user) => user.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UsersEntity, (user) => user.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  user: Users;
+  user: UsersEntity;
 
-  @ManyToOne(() => TarotCards, (card) => card.id, { onDelete: 'CASCADE' })
+  @ManyToOne(() => TarotCardsEntity, (card) => card.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'card_id' })
-  card: TarotCards;
+  card: TarotCardsEntity;
 }

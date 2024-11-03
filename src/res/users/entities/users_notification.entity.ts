@@ -1,8 +1,8 @@
 import { Entity, PrimaryColumn, Column, OneToOne } from 'typeorm';
-import { Users } from '@res/users/entities/users.entity';
+import { UsersEntity } from '@res/users/entities/users.entity';
 
 @Entity('users_notification')
-export class UsersNotification {
+export class UsersNotificationEntity {
   @PrimaryColumn()
   user_id: number;
 
@@ -12,6 +12,8 @@ export class UsersNotification {
   @Column({ type: 'boolean', default: false })
   horoscope: boolean;
 
-  @OneToOne(() => Users, (user) => user.notification, { onDelete: 'CASCADE' })
-  user: Users;
+  @OneToOne(() => UsersEntity, (user) => user.notification, {
+    onDelete: 'CASCADE',
+  })
+  user: UsersEntity;
 }

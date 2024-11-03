@@ -12,7 +12,9 @@ export class AuthService {
   ) {}
 
   async validateUserByEmail(email: string): Promise<any> {
+    console.log('email', email);
     const user = await this.usersService.findByEmail(email);
+    console.log('user', user);
     if (user) {
       return user;
     }
@@ -20,7 +22,9 @@ export class AuthService {
   }
 
   async login(user: any) {
+    console.log('user', user);
     const payload = { email: user.email, sub: user.id };
+    console.log('payload', payload);
     const token = this.jwtService.sign(payload);
 
     // Redis에 토큰 저장 (유효기간 설정 가능)

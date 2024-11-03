@@ -5,12 +5,12 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Users } from '@res/users/entities/users.entity';
-import { Naming } from '@res/namings/entities/naming.entity';
+import { UsersEntity } from '@res/users/entities/users.entity';
+import { NamingEntity } from '@res/namings/entities/naming.entity';
 import { BaseEntity } from '@/src/common/entities/base.entity';
 
 @Entity('saved_naming')
-export class SavedNaming extends BaseEntity {
+export class SavedNamingEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -20,11 +20,13 @@ export class SavedNaming extends BaseEntity {
   @Column({ type: 'int', nullable: false })
   naming_id: number;
 
-  @ManyToOne(() => Users, (user) => user.savedNamings, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UsersEntity, (user) => user.savedNamings, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id' })
-  user: Users;
+  user: UsersEntity;
 
-  @ManyToOne(() => Naming, { onDelete: 'CASCADE' })
+  @ManyToOne(() => NamingEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'naming_id' })
-  naming: Naming;
+  naming: NamingEntity;
 }

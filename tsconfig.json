@@ -24,5 +24,6 @@
     }
   },
   "include": ["src/**/*"], // 설명: src 폴더 내의 모든 ts 파일을 컴파일
-  "exclude": ["node_modules", "dist"] // 설명: node_modules, dist 폴더는 컴파일에서 제외
+  "exclude": ["node_modules", "dist"], // 설명: node_modules, dist 폴더는 컴파일에서 제외
+  "typeRoots": ["node_modules/@types", "./src/types"]
 }

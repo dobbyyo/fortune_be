@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('heavenly_stems')
-export class HeavenlyStems {
+export class HeavenlyStemsEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

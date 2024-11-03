@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('earthly_branches')
-export class EarthlyBranches {
+export class EarthlyBranchesEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

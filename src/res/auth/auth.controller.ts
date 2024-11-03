@@ -1,20 +1,47 @@
-import { Controller, Req, Post, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Req,
+  Post,
+  Get,
+  Res,
+  Body,
+  Headers,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Request } from 'express';
-import { LocalAuthGuard } from '@/src/guards/local-auth.guard';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
+import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { LoginEmailDto } from './dto/login-email.dto';
+import { AuthenticatedGuard } from '@/src/guards/authenticated.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @UseGuards(LocalAuthGuard)
+  @ApiOperation({ summary: 'CSRF 토큰 발급' })
+  @Get('csrf-token')
+  async getCsrfToken(@Req() req: Request, @Res() res: Response) {
+    const csrfToken = req.csrfToken(); // CSRF 토큰 생성
+
+    return res.status(200).json({ csrfToken });
+  }
+
   @ApiOperation({ summary: 'Login' })
-  @ApiResponse({ status: 200, description: '로그인 성공' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiHeader({
+    name: 'csrf-token',
+    description: 'CSRF token for secure requests',
+    required: true,
+  })
+  @UseGuards(AuthenticatedGuard) // 로그인 상태에서는 접근 불가
   @Post('login')
-  async login(@Req() req: Request) {
+  async login(
+    @Body() loginemailDto: LoginEmailDto,
+    @Headers('csrf-token') csrfToken: string, // 요청 헤더에서 CSRF 토큰을 가져옴
+    @Req() req: Request,
+  ) {
+    console.log('loginemailDto', loginemailDto);
+    console.log('req', req.user);
     return this.authService.login(req.user);
   }
 

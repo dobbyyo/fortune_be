@@ -6,18 +6,18 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UsersProfile } from '@res/users/entities/users_profile.entity';
-import { UsersNotification } from '@res/users/entities/users_notification.entity';
-import { UsersPassword } from '@res/users/entities/users_password.entity';
-import { UsersLanguage } from '@res/users/entities/users_language.entity';
+import { UsersProfileEntity } from '@res/users/entities/users_profile.entity';
+import { UsersNotificationEntity } from '@res/users/entities/users_notification.entity';
+import { UsersPasswordEntity } from '@res/users/entities/users_password.entity';
+import { UsersLanguageEntity } from '@res/users/entities/users_language.entity';
 import { BaseEntity } from '@/src/common/entities/base.entity';
-import { SavedUserTarotCards } from '@res/tarots/entities/saved_user_tarot_cards.entity';
-import { SavedSandbars } from '@res/fortunes/entities/saved_sandbars.entity';
-import { SavedDreamInterpretation } from '@res/dreams/entities/saved_dream_interpretation.entity';
-import { SavedNaming } from '@res/namings/entities/saved_naming.entity';
+import { SavedUserTarotCardsEntity } from '@res/tarots/entities/saved_user_tarot_cards.entity';
+import { SavedSandbarsEntity } from '@res/fortunes/entities/saved_sandbars.entity';
+import { SavedDreamInterpretationEntity } from '@res/dreams/entities/saved_dream_interpretation.entity';
+import { SavedNamingEntity } from '@res/namings/entities/saved_naming.entity';
 
 @Entity('users')
-export class Users extends BaseEntity {
+export class UsersEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -39,39 +39,43 @@ export class Users extends BaseEntity {
   @Column({ type: 'time', nullable: true })
   birth_time: string | null;
 
-  @OneToOne(() => UsersProfile)
+  @OneToOne(() => UsersProfileEntity)
   @JoinColumn()
-  profile: UsersProfile;
+  profile: UsersProfileEntity;
 
-  @OneToOne(() => UsersNotification)
+  @OneToOne(() => UsersNotificationEntity)
   @JoinColumn()
-  notification: UsersNotification;
+  notification: UsersNotificationEntity;
 
-  @OneToOne(() => UsersPassword)
+  @OneToOne(() => UsersPasswordEntity)
   @JoinColumn()
-  password: UsersPassword;
+  password: UsersPasswordEntity;
 
-  @OneToOne(() => UsersLanguage)
+  @OneToOne(() => UsersLanguageEntity)
   @JoinColumn()
-  language: UsersLanguage;
+  language: UsersLanguageEntity;
 
-  @OneToMany(() => SavedUserTarotCards, (savedCard) => savedCard.user, {
+  @OneToMany(() => SavedUserTarotCardsEntity, (savedCard) => savedCard.user, {
     cascade: true,
   })
-  savedCards: SavedUserTarotCards[];
+  savedCards: SavedUserTarotCardsEntity[];
 
-  @OneToMany(() => SavedSandbars, (savedSandbar) => savedSandbar.user, {
+  @OneToMany(() => SavedSandbarsEntity, (savedSandbar) => savedSandbar.user, {
     cascade: true,
   })
-  savedSandbars: SavedSandbars[];
+  savedSandbars: SavedSandbarsEntity[];
 
-  @OneToMany(() => SavedDreamInterpretation, (savedDream) => savedDream.user, {
+  @OneToMany(
+    () => SavedDreamInterpretationEntity,
+    (savedDream) => savedDream.user,
+    {
+      cascade: true,
+    },
+  )
+  savedDreamInterpretations: SavedDreamInterpretationEntity[];
+
+  @OneToMany(() => SavedNamingEntity, (savedNaming) => savedNaming.user, {
     cascade: true,
   })
-  savedDreamInterpretations: SavedDreamInterpretation[];
-
-  @OneToMany(() => SavedNaming, (savedNaming) => savedNaming.user, {
-    cascade: true,
-  })
-  savedNamings: SavedNaming[];
+  savedNamings: SavedNamingEntity[];
 }
