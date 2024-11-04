@@ -1,16 +1,44 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ExecutionContext,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { RedisService } from '../res/redis/redis.service';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  handleRequest<TUser = any>(err: any, user: any): TUser {
-    if (err) {
-      console.error('Authentication Error:', err); // 에러 발생 시 로그 출력
+  constructor(private readonly redisService: RedisService) {
+    super();
+  }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const activate = (await super.canActivate(context)) as boolean;
+
+    if (!activate) {
+      throw new UnauthorizedException('Authentication failed');
     }
-    if (!user) {
-      console.error('No user found'); // 인증 실패 시 로그 출력
-      throw new UnauthorizedException('Authentication failed'); // 예외 발생
+
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
+    const token = request.get('authorization')?.replace('Bearer ', '');
+    console.log('user:', user);
+    console.log('token:', token);
+    // Redis에서 토큰을 가져와서 검증
+    const redisToken = await this.redisService.get(`token:${user.userId}`);
+    console.log('redisToken:', redisToken);
+    if (!redisToken || redisToken !== token) {
+      throw new UnauthorizedException('Invalid token or session expired');
     }
-    return user; // 인증 성공 시 사용자 반환
+
+    return activate;
+  }
+
+  handleRequest(err: any, user: any) {
+    if (err || !user) {
+      throw err || new UnauthorizedException('Authentication failed');
+    }
+
+    return user;
   }
 }

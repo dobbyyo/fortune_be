@@ -9,7 +9,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TerminusModule } from '@nestjs/terminus';
-
 import { AppService } from '@src/app.service';
 import appConfig from '@src/config/app.config';
 import dbConfig from '@src/config/db.config';
@@ -44,21 +43,19 @@ import { SandbarEntity } from './res/fortunes/entities/sandbar.entity';
 import { HeavenlyStemsEntity } from './res/fortunes/entities/heavenly_stems.entity';
 import { EarthlyBranchesEntity } from './res/fortunes/entities/earthly_baranches.entity';
 import { SavedDreamInterpretationEntity } from './res/dreams/entities/saved_dream_interpretation.entity';
+import awsConfig from './config/aws.config';
+import redisConfig from './config/redis.config';
 
-console.log('asd', __dirname);
-console.log('dd', process.env.NODE_ENV);
-console.log('ent', __dirname + '/../src/res');
 @Module({
   imports: [
     ConfigModule.forRoot({
       cache: true, // 설명: 환경변수를 캐싱할지 여부를 설정합니다. 기본값은 false입니다.
       isGlobal: true, // 설명: true로 설정하면 모듈이 전역으로 설정됩니다. 기본값은 false입니다.
       envFilePath: `.env.${process.env.NODE_ENV}`, // 설명: 환경변수 파일의 경로를 설정합니다.
-      load: [appConfig, dbConfig],
+      load: [appConfig, dbConfig, awsConfig, redisConfig],
     }),
 
     ThrottlerModule.forRoot([
-      // 설명: 요청 제한을 설정합니다.
       {
         ttl: 60, // 설명: 요청 제한 시간(초)을 설정합니다. 기본값은 60초입니다.
         limit: 10, // 설명: 요청 제한 횟수를 설정합니다. 기본값은 10입니다.
@@ -68,7 +65,7 @@ console.log('ent', __dirname + '/../src/res');
     RedisModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
+      useFactory: async (configService: ConfigService) => ({
         config: {
           host: configService.get<string>('REDIS_HOST'),
           port: configService.get<number>('REDIS_PORT'),
@@ -88,7 +85,7 @@ console.log('ent', __dirname + '/../src/res');
         database: configService.get<string>('database.database'),
         synchronize: configService.get<boolean>('database.synchronize'),
         logging: configService.get<boolean>('database.logging'),
-        // entities: [__dirname + `/../src/res/**/entities/*.entity.ts`], // 엔티티 경로 설정
+
         entities: [
           UsersEntity,
           UsersProfileEntity,

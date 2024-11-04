@@ -25,11 +25,11 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { email: user.email, sub: user.id };
+    console.log(user);
+    const payload = { email: user.email, userId: user.id };
 
     const token = this.jwtService.sign(payload);
 
-    // Redis에 토큰 저장 (유효기간 설정 가능)
     await this.redisService.set(`token:${user.id}`, token, 3600); // 1시간 유효
     return { access_token: token };
   }
@@ -51,8 +51,8 @@ export class AuthService {
   }
 
   async logout(userId: number) {
-    // Redis에서 토큰 삭제
     await this.redisService.del(`token:${userId}`);
+
     return { message: 'Logout success' };
   }
 }

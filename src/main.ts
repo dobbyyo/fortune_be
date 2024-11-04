@@ -37,6 +37,7 @@ async function bootstrap() {
     .setTitle('FORTUNE API')
     .setDescription('FORTUNE API 문서입니다.')
     .setVersion('1.0')
+    .addBearerAuth() // Bearer Auth 설정
     .addTag('FORTUNE')
     .build();
 
