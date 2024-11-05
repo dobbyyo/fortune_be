@@ -7,9 +7,7 @@ export class AppService {
   constructor(
     @Inject(appConfig.KEY)
     private config: ConfigType<typeof appConfig>,
-  ) {
-    console.log('host', this.config.host);
-  }
+  ) {}
 
   getHello(): string {
     const host = this.config.host;

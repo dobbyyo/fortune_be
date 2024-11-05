@@ -9,8 +9,8 @@ export class UsersPasswordEntity {
   @Column({ type: 'boolean', default: false })
   password_lock_status: boolean;
 
-  @Column({ type: 'varchar', nullable: false })
-  hash_password: string;
+  @Column({ type: 'varchar', nullable: true, default: null })
+  hash_password: string | null;
 
   @OneToOne(() => UsersEntity, (user) => user.password, { onDelete: 'CASCADE' })
   user: UsersEntity;

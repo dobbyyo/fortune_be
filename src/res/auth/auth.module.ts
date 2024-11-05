@@ -3,14 +3,14 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
-import { RedisService } from '../redis/redis.service';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt-strategy';
+import { RedisGlobalModule } from '../redis/redis.module';
+import { RedisService } from '../redis/redis.service';
 
 @Module({
   imports: [
-    UsersModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -25,9 +25,10 @@ import { JwtStrategy } from './strategies/jwt-strategy';
     }),
     forwardRef(() => UsersModule),
     ConfigModule,
+    RedisGlobalModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, RedisService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, RedisService],
   exports: [AuthService, JwtModule, PassportModule], // AuthService를 외부에서 사용할 수 있도록 설정
 })
 export class AuthModule {}

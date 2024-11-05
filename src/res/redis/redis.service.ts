@@ -20,7 +20,7 @@ export class RedisService {
   async get<T>(key: string): Promise<T | null> {
     // 설명: 지정된 키의 값을 가져옵니다.
     if (!this.client) throw new Error('Redis client is not initialized'); // 설명: Redis 클라이언트가 초기화되지 않았을 때 에러를 발생시킵니다.
-    console.log('key:', key);
+
     const value = await this.client.get(key); // 설명: 지정된 키의 값을 가져옵니다.
     return value ? JSON.parse(value) : null; // 설명: 지정된 키의 값을 반환합니다.
   }

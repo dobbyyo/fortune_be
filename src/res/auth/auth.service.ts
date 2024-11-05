@@ -12,25 +12,27 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly redisService: RedisService,
+    private readonly redisService: RedisService, // RedisService 주입
   ) {}
 
   async validateUserByEmail(email: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
-      throw new UnauthorizedException('해당 유저가 존재하지 않습니다.'); // 에러 발생    ;
+      throw new UnauthorizedException('해당 유저가 존재하지 않습니다.');
     }
+
     return user;
   }
 
   async login(user: any) {
-    console.log(user);
-    const payload = { email: user.email, userId: user.id };
+    const { myInfo } = user;
+
+    const payload = { email: myInfo.email, userId: myInfo.id };
 
     const token = this.jwtService.sign(payload);
 
-    await this.redisService.set(`token:${user.id}`, token, 3600); // 1시간 유효
+    await this.redisService.set(`token:${myInfo.id}`, token, 7200); // 1시간 유효
     return { access_token: token };
   }
 
@@ -42,12 +44,14 @@ export class AuthService {
     birth_date: Date;
     birth_time: string;
   }) {
-    const existingUser = await this.usersService.findByEmail(user.email);
+    const { myInfo } = await this.usersService.findByEmail(user.email);
 
-    if (existingUser) {
+    if (myInfo) {
       throw new ConflictException('이미 존재하는 이메일입니다.');
     }
-    return this.usersService.createUser(user);
+    await this.usersService.createUser(user);
+
+    return { message: 'Register success' };
   }
 
   async logout(userId: number) {

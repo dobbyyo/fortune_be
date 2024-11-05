@@ -1,4 +1,24 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateUserDto } from '@res/users/dto/create-user.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {}
+export class UpdateUserDto {
+  @ApiProperty({ example: '홍길동', description: 'Username' })
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @ApiProperty({ example: '2022-01-01', description: 'birth_date' })
+  @IsString()
+  @IsNotEmpty()
+  birth_date: Date;
+
+  @ApiProperty({ example: '12:00:00', description: 'birth_time' })
+  @IsString()
+  @IsNotEmpty()
+  birth_time: string;
+
+  @ApiProperty({ example: 'MAN', description: 'gender' })
+  @IsString()
+  @IsNotEmpty()
+  gender: string;
+}

@@ -15,7 +15,6 @@ export class AuthenticatedGuard implements CanActivate {
 
     // 로그인 상태 확인
     if (request.isAuthenticated && request.isAuthenticated()) {
-      console.log('이미 로그인된 사용자입니다.');
       throw new UnauthorizedException('이미 로그인된 사용자입니다.');
     }
 

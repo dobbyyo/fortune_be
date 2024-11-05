@@ -6,7 +6,7 @@ export class UsersLanguageEntity {
   @PrimaryColumn()
   user_id: number;
 
-  @Column({ type: 'enum', enum: ['KOREAN', 'ENGLISH'] })
+  @Column({ type: 'enum', enum: ['KOREAN', 'ENGLISH'], default: 'KOREAN' })
   language: string;
 
   @OneToOne(() => UsersEntity, (user) => user.language, { onDelete: 'CASCADE' })

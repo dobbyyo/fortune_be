@@ -21,9 +21,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(req: Request, payload: JwtPayloadType) {
-    console.log('payload:', payload);
     const token = req.get('authorization')?.replace('Bearer ', ''); // 헤더에서 토큰 추출
-    console.log('token:', token);
+
     return { ...payload, token }; // 토큰을 포함한 유저 정보 반환
   }
 }

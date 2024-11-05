@@ -22,8 +22,6 @@ import { TarotsModule } from '@res/tarots/tarots.module';
 import { FortunesModule } from '@res/fortunes/fortunes.module';
 import { DreamsModule } from '@res/dreams/dreams.module';
 import { NamingsModule } from '@res/namings/namings.module';
-import { RedisModule } from '@liaoliaots/nestjs-redis';
-import { RedisService } from './res/redis/redis.service';
 import { AuthModule } from './res/auth/auth.module';
 import * as cookieParser from 'cookie-parser';
 import * as csurf from 'csurf';
@@ -45,6 +43,7 @@ import { EarthlyBranchesEntity } from './res/fortunes/entities/earthly_baranches
 import { SavedDreamInterpretationEntity } from './res/dreams/entities/saved_dream_interpretation.entity';
 import awsConfig from './config/aws.config';
 import redisConfig from './config/redis.config';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
 
 @Module({
   imports: [
@@ -61,17 +60,6 @@ import redisConfig from './config/redis.config';
         limit: 10, // 설명: 요청 제한 횟수를 설정합니다. 기본값은 10입니다.
       },
     ]),
-
-    RedisModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        config: {
-          host: configService.get<string>('REDIS_HOST'),
-          port: configService.get<number>('REDIS_PORT'),
-        },
-      }),
-    }),
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -119,6 +107,7 @@ import redisConfig from './config/redis.config';
     DreamsModule,
     NamingsModule,
     AuthModule,
+    RedisModule,
   ],
 
   controllers: [AppController, HealthController],
@@ -128,7 +117,6 @@ import redisConfig from './config/redis.config';
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
     },
-    RedisService,
   ],
 })
 export class AppModule implements NestModule {
@@ -150,6 +138,7 @@ export class AppModule implements NestModule {
           },
         }),
       )
-      .forRoutes({ path: 'auth/csrf-token', method: RequestMethod.GET });
+      .exclude({ path: '/api/auth/csrf-token', method: RequestMethod.GET }) // CSRF 토큰을 발급하는 라우트를 제외합니다.
+      .forRoutes('*');
   }
 }
