@@ -60,7 +60,7 @@ describe('UsersController', () => {
   });
 
   describe('getMyInfo', () => {
-    it('should return user info for authenticated user', async () => {
+    it('인증된 유저 정보 가져오기', async () => {
       jest
         .spyOn(usersService, 'findByEmail')
         .mockResolvedValue({ myInfo: mockUser });
@@ -79,7 +79,7 @@ describe('UsersController', () => {
   });
 
   describe('updateMyInfo', () => {
-    it('should update user info', async () => {
+    it('유저 업데이트', async () => {
       const updateUserDto: UpdateUserDto = {
         username: 'Updated Name',
         birth_date: new Date('2023-01-01'),
@@ -108,7 +108,7 @@ describe('UsersController', () => {
     });
   });
 
-  describe('updateLanguage', () => {
+  describe('유저 언어 업데이트', () => {
     it('should update user language setting', async () => {
       const updateLanguageDto: UpdateLanguageDto = { language: 'ENGLISH' };
 

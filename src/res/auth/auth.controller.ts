@@ -82,7 +82,8 @@ export class AuthController {
     @Headers('csrf-token') csrfToken: string,
     @Req() req: Request,
   ) {
-    return this.authService.register(req.body);
+    await this.authService.register(req.body);
+    return createResponse(200, 'Register success');
   }
 
   @ApiOperation({ summary: '로그아웃' })

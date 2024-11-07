@@ -44,20 +44,22 @@ import { SavedDreamInterpretationEntity } from './res/dreams/entities/saved_drea
 import awsConfig from './config/aws.config';
 import redisConfig from './config/redis.config';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { InformationModule } from './res/information/information.module';
+import { WebInformationEntity } from './res/information/entities/web_information.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      cache: true, // 설명: 환경변수를 캐싱할지 여부를 설정합니다. 기본값은 false입니다.
-      isGlobal: true, // 설명: true로 설정하면 모듈이 전역으로 설정됩니다. 기본값은 false입니다.
+      cache: true, // 설명: 환경변수를 캐싱할지 여부를 설정합니다.
+      isGlobal: true, // 설명: true로 설정하면 모듈이 전역으로 설정됩니다.
       envFilePath: `.env.${process.env.NODE_ENV}`, // 설명: 환경변수 파일의 경로를 설정합니다.
       load: [appConfig, dbConfig, awsConfig, redisConfig],
     }),
 
     ThrottlerModule.forRoot([
       {
-        ttl: 60, // 설명: 요청 제한 시간(초)을 설정합니다. 기본값은 60초입니다.
-        limit: 10, // 설명: 요청 제한 횟수를 설정합니다. 기본값은 10입니다.
+        ttl: 60, // 설명: 요청 제한 시간(초)을 설정합니다.
+        limit: 10, // 설명: 요청 제한 횟수를 설정합니다.
       },
     ]),
 
@@ -91,11 +93,12 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
           HeavenlyStemsEntity,
           EarthlyBranchesEntity,
           SavedDreamInterpretationEntity,
-        ], // 엔티티 경로 설정
+          WebInformationEntity,
+        ],
         migrations: configService.get<string[]>('database.migrations'), // 마이그레이션 경로 설정
         migrationsTableName: configService.get<string>(
           'database.migrationsTableName',
-        ), // 마이그레이션 테이블 이름 설정
+        ),
       }),
     }),
 
@@ -108,6 +111,7 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
     NamingsModule,
     AuthModule,
     RedisModule,
+    InformationModule,
   ],
 
   controllers: [AppController, HealthController],
