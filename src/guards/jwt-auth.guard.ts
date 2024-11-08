@@ -14,7 +14,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const activate = (await super.canActivate(context)) as boolean;
-    console.log('activate', activate);
     if (!activate) {
       throw new UnauthorizedException('Authentication failed');
     }
@@ -23,10 +22,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const user = request.user;
 
     const token = request.get('authorization')?.replace('Bearer ', '');
-
     // Redis에서 토큰을 가져와서 검증
     const redisToken = await this.redisService.get(`token:${user.userId}`);
-
     if (!redisToken || redisToken !== token) {
       throw new UnauthorizedException('Invalid token or session expired');
     }

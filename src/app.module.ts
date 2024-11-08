@@ -46,6 +46,9 @@ import redisConfig from './config/redis.config';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { InformationModule } from './res/information/information.module';
 import { WebInformationEntity } from './res/information/entities/web_information.entity';
+import { OpenaiModule } from './res/openai/openai.module';
+import { openaiConfig } from './config/openai.config';
+import { SaveTarotMainTitleEntity } from './res/tarots/entities/saved_tarot_main_title.entity';
 
 @Module({
   imports: [
@@ -53,7 +56,7 @@ import { WebInformationEntity } from './res/information/entities/web_information
       cache: true, // 설명: 환경변수를 캐싱할지 여부를 설정합니다.
       isGlobal: true, // 설명: true로 설정하면 모듈이 전역으로 설정됩니다.
       envFilePath: `.env.${process.env.NODE_ENV}`, // 설명: 환경변수 파일의 경로를 설정합니다.
-      load: [appConfig, dbConfig, awsConfig, redisConfig],
+      load: [appConfig, dbConfig, awsConfig, redisConfig, openaiConfig],
     }),
 
     ThrottlerModule.forRoot([
@@ -94,6 +97,7 @@ import { WebInformationEntity } from './res/information/entities/web_information
           EarthlyBranchesEntity,
           SavedDreamInterpretationEntity,
           WebInformationEntity,
+          SaveTarotMainTitleEntity,
         ],
         migrations: configService.get<string[]>('database.migrations'), // 마이그레이션 경로 설정
         migrationsTableName: configService.get<string>(
@@ -112,6 +116,7 @@ import { WebInformationEntity } from './res/information/entities/web_information
     AuthModule,
     RedisModule,
     InformationModule,
+    OpenaiModule,
   ],
 
   controllers: [AppController, HealthController],

@@ -41,6 +41,7 @@
     "ioredis": "^5.4.1",
     "mysql2": "^3.11.3",
     "nest-winston": "^1.9.7",
+    "openai": "^4.71.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",

@@ -12,7 +12,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly redisService: RedisService, // RedisService 주입
+    private readonly redisService: RedisService,
   ) {}
 
   async validateUserByEmail(email: string): Promise<any> {

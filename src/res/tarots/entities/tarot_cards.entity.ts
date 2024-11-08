@@ -12,7 +12,7 @@ export class TarotCardsEntity {
   type: 'Major' | 'Minor';
 
   @Column({ type: 'int', nullable: false })
-  number: number;
+  card_num: number;
 
   @Column({
     type: 'enum',

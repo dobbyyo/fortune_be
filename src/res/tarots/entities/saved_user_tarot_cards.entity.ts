@@ -8,14 +8,12 @@ import {
 } from 'typeorm';
 import { UsersEntity } from '@res/users/entities/users.entity';
 import { TarotCardsEntity } from '@res/tarots/entities/tarot_cards.entity';
+import { SaveTarotMainTitleEntity } from './saved_tarot_main_title.entity';
 
 @Entity('saved_user_tarot_cards')
 export class SavedUserTarotCardsEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  main_title: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   sub_title: string;
@@ -29,17 +27,8 @@ export class SavedUserTarotCardsEntity extends BaseEntity {
   @Column({ type: 'boolean', nullable: false })
   is_upright: boolean;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  card_name: string;
-
-  @Column({ type: 'text', nullable: true })
-  card_content: string;
-
   @Column({ type: 'text', nullable: true })
   card_interpretation: string;
-
-  @Column({ type: 'text', nullable: true })
-  card_meaning: string;
 
   @ManyToOne(() => UsersEntity, (user) => user.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
@@ -48,4 +37,10 @@ export class SavedUserTarotCardsEntity extends BaseEntity {
   @ManyToOne(() => TarotCardsEntity, (card) => card.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'card_id' })
   card: TarotCardsEntity;
+
+  @ManyToOne(() => SaveTarotMainTitleEntity, (mainTitle) => mainTitle.cards, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'main_title_id' })
+  mainTitle: SaveTarotMainTitleEntity;
 }
