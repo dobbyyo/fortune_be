@@ -1,26 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { UpdateNamingDto } from '@res/namings/dto/update-naming.dto';
-import { CreateNamingDto } from '@res/namings/dto/create-naming.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { NamingEntity } from './entities/naming.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { SavedNamingEntity } from './entities/saved_naming.entity';
+import { OpenaiService } from '../openai/openai.service';
 
+@ApiTags('Namings')
 @Injectable()
 export class NamingsService {
-  create(createNamingDto: CreateNamingDto) {
-    return 'This action adds a new naming';
-  }
+  constructor(
+    @InjectRepository(NamingEntity)
+    private readonly tarotCardsRepository: Repository<NamingEntity>,
+    @InjectRepository(SavedNamingEntity)
+    private readonly savedUserTarotCardsRepository: Repository<SavedNamingEntity>,
+    private readonly openaiService: OpenaiService,
+  ) {}
 
-  findAll() {
-    return `This action returns all namings`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} naming`;
-  }
-
-  update(id: number, updateNamingDto: UpdateNamingDto) {
-    return `This action updates a #${id} naming`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} naming`;
+  async drawNaming(mainTitle: string, content: string) {
+    const naming = await this.openaiService.getNaming(mainTitle, content);
+    return { naming };
   }
 }

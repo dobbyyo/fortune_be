@@ -51,4 +51,26 @@ export class OpenaiService {
 
     return interpretationText;
   }
+
+  async getNaming(mainTitle: string, content: string) {
+    const prompt = `
+    요청에 따라 이름을 작성하세요:
+    1. JSON 형식으로 결과를 반환합니다. { "name": "추천 성함(한자 이름일 경우 성함의 한자표현도 같이 표현)", "description": "설명" } 
+    2. ${content}에 맞게, ${mainTitle}이 사람이면 3글자로 성과 이름을 포함한 순수 한국 성함 (예: 김아름) 또는 한자 성함 (예: 강호동)으로 추천합니다.
+    3. 성은 '김'입니다. 이름은 한글과 한자 표현을 모두 포함하여 3글자로 구성해주세요.`;
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: 'AI 작명 요청 시스템입니다.' },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: 300,
+    });
+    console.log('res', response.choices[0]);
+    // return response.choices[0].message.content.trim();
+    const namingText = response.choices[0].message.content.trim();
+
+    return namingText;
+  }
 }

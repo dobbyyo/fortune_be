@@ -1,42 +1,24 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { NamingsService } from '@res/namings/namings.service';
-import { CreateNamingDto } from '@res/namings/dto/create-naming.dto';
-import { UpdateNamingDto } from '@res/namings/dto/update-naming.dto';
+import { CsrfHeaders } from '@/src/utils/csrf-headers.util';
+import { DrawNamingDto } from './dto/draw-naming.dto';
+import { createResponse } from '@/src/utils/create-response.util';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Namings')
 @Controller('namings')
 export class NamingsController {
   constructor(private readonly namingsService: NamingsService) {}
 
-  @Post()
-  create(@Body() createNamingDto: CreateNamingDto) {
-    return this.namingsService.create(createNamingDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.namingsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.namingsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNamingDto: UpdateNamingDto) {
-    return this.namingsService.update(+id, updateNamingDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.namingsService.remove(+id);
+  @CsrfHeaders('AI 작명')
+  @Get('draw')
+  async drawNaming(@Query() drawNamingDto: DrawNamingDto) {
+    const { mainTitle, content } = drawNamingDto;
+    const decodedMainTitle = decodeURIComponent(mainTitle); // 한글 디코딩
+    const namingCards = await this.namingsService.drawNaming(
+      decodedMainTitle,
+      content,
+    );
+    return createResponse(200, 'successful', namingCards);
   }
 }
