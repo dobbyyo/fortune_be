@@ -1,25 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TarotsController } from './tarots.controller';
 import { TarotsService } from './tarots.service';
+import { JwtAuthGuard } from '@/src/guards/jwt-auth.guard';
 import { DrawTarotDto } from './dto/draw-tarot.dto';
-import { BadRequestException } from '@nestjs/common';
+import { TarotInterpretationDto } from './dto/interpret-tarot.dto';
+import { SaveTarotCardDto } from './dto/save-tarot.dto';
+import { createResponse } from '@/src/utils/create-response.util';
+import { Request } from 'express';
+import { SavedUserTarotCardsEntity } from './entities/saved_user_tarot_cards.entity';
+import { SaveTarotMainTitleEntity } from './entities/saved_tarot_main_title.entity';
+import { UsersEntity } from '../users/entities/users.entity';
+import { TarotCardsEntity } from './entities/tarot_cards.entity';
 
 describe('TarotsController', () => {
   let tarotsController: TarotsController;
   let tarotsService: TarotsService;
-
-  const mockTarotCard = {
-    id: 1,
-    name: 'The Fool',
-    type: 'Major',
-    number: 0,
-    suit: null,
-    image_url: 'https://example.com/fool.jpg',
-    upright_meaning: 'New beginnings',
-    reversed_meaning: 'Recklessness',
-    subTitle: '애정운',
-    isReversed: false,
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -28,13 +23,18 @@ describe('TarotsController', () => {
         {
           provide: TarotsService,
           useValue: {
-            drawTarot: jest
-              .fn()
-              .mockResolvedValue({ tarotCards: [mockTarotCard] }),
+            drawTarot: jest.fn(),
+            interpretTarotCards: jest.fn(),
+            saveTarotCards: jest.fn(),
           },
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({
+        canActivate: jest.fn().mockReturnValue(true),
+      })
+      .compile();
 
     tarotsController = module.get<TarotsController>(TarotsController);
     tarotsService = module.get<TarotsService>(TarotsService);
@@ -45,26 +45,126 @@ describe('TarotsController', () => {
   });
 
   describe('drawTarot', () => {
-    it('mainTitle에 맞는 타롯카드 데이터 호출', async () => {
+    it('카드 뽑기', async () => {
       const drawTarotDto: DrawTarotDto = { mainTitle: '오늘의 타로' };
+      const decodedMainTitle = decodeURIComponent(drawTarotDto.mainTitle);
+
+      // Ensure `type` is explicitly set to either "Major" or "Minor"
+      const tarotCardsMock = {
+        tarotCards: [
+          {
+            id: 1,
+            name: 'The Fool',
+            type: 'Major' as 'Major' | 'Minor',
+            card_num: 0,
+            suit: null as 'Wands' | 'Cups' | 'Swords' | 'Pentacles' | null,
+            image_url: 'https://example.com/fool.jpg',
+            upright_meaning: 'New beginnings',
+            reversed_meaning: 'Recklessness',
+            subTitle: '애정운',
+            isReversed: false,
+          },
+        ],
+      };
+
+      jest.spyOn(tarotsService, 'drawTarot').mockResolvedValue(tarotCardsMock);
+
       const result = await tarotsController.drawTarot(drawTarotDto);
-
-      expect(result).toEqual({
-        status: 200,
-        message: 'successful',
-        data: { tarotCards: [mockTarotCard] },
-      });
-      expect(tarotsService.drawTarot).toHaveBeenCalledWith('오늘의 타로');
+      expect(result).toEqual(createResponse(200, 'successful', tarotCardsMock));
+      expect(tarotsService.drawTarot).toHaveBeenCalledWith(decodedMainTitle);
     });
+  });
 
-    it('없는 타이틀 경우 에러 발생', async () => {
-      const drawTarotDto: DrawTarotDto = { mainTitle: '잘못된 타이틀' };
+  describe('interpretTarotCards', () => {
+    it('카드 해석', async () => {
+      const tarotInterpretationDto: TarotInterpretationDto = {
+        cards: [{ cardId: 1, subTitle: '애정운', isReversed: false }],
+      };
+      const interpretationsMock = {
+        tarotCards: [
+          {
+            id: 1,
+            name: 'The Fool',
+            type: 'Major' as 'Major' | 'Minor',
+            card_num: 0,
+            suit: null as 'Wands' | 'Cups' | 'Swords' | 'Pentacles' | null,
+            image_url: 'https://example.com/fool.jpg',
+            subTitle: '애정운',
+            isReversed: false,
+            interpretation: 'This is the interpretation text.',
+          },
+        ],
+      };
+
       jest
-        .spyOn(tarotsService, 'drawTarot')
-        .mockRejectedValue(new BadRequestException('Invalid main title'));
+        .spyOn(tarotsService, 'interpretTarotCards')
+        .mockResolvedValue(interpretationsMock);
 
-      await expect(tarotsController.drawTarot(drawTarotDto)).rejects.toThrow(
-        BadRequestException,
+      const result = await tarotsController.interpretTarotCards(
+        tarotInterpretationDto,
+      );
+
+      expect(result).toEqual(
+        createResponse(200, 'successful', interpretationsMock),
+      );
+      expect(tarotsService.interpretTarotCards).toHaveBeenCalledWith(
+        tarotInterpretationDto,
+      );
+    });
+  });
+
+  describe('saveTarotCards', () => {
+    it('카드 저장', async () => {
+      const req = { user: { userId: 1 } } as Request;
+      const saveTarotCardDto: SaveTarotCardDto = {
+        mainTitle: '오늘의 타로',
+        cards: [
+          {
+            cardId: 1,
+            subTitle: '애정운',
+            isReversed: false,
+            cardInterpretation: 'Sample interpretation',
+          },
+        ],
+      };
+
+      const savedCardsMock = [
+        {
+          id: 1,
+          card_id: 1,
+          main_title: '오늘의 타로',
+          sub_title: '애정운',
+          user_id: 1,
+          is_upright: true,
+          created_at: new Date(),
+          updated_at: new Date(),
+          card_interpretation: 'Sample interpretation',
+          card: { id: 1, name: 'The Fool' } as TarotCardsEntity, // 카드에 대한 Mock 정보
+          mainTitle: {
+            id: 1,
+            title: '오늘의 타로',
+          } as SaveTarotMainTitleEntity, // 메인 타이틀에 대한 Mock 정보
+          user: req.user as UsersEntity, // 유저에 대한 Mock 정보
+        } as unknown as SavedUserTarotCardsEntity,
+      ];
+
+      jest
+        .spyOn(tarotsService, 'saveTarotCards')
+        .mockResolvedValue({ savedCards: savedCardsMock });
+
+      const result = await tarotsController.saveTarotCards(
+        req,
+        saveTarotCardDto,
+      );
+
+      expect(result).toEqual(
+        createResponse(200, '타로 카드가 성공적으로 저장되었습니다.', {
+          savedCards: savedCardsMock,
+        }),
+      );
+      expect(tarotsService.saveTarotCards).toHaveBeenCalledWith(
+        1,
+        saveTarotCardDto,
       );
     });
   });

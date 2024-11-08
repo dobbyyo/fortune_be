@@ -175,6 +175,6 @@ export class TarotsService {
       }),
     );
 
-    return savedCards;
+    return { savedCards };
   }
 }
