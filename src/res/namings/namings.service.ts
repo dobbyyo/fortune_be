@@ -11,14 +11,50 @@ import { OpenaiService } from '../openai/openai.service';
 export class NamingsService {
   constructor(
     @InjectRepository(NamingEntity)
-    private readonly tarotCardsRepository: Repository<NamingEntity>,
+    private readonly namingRepository: Repository<NamingEntity>,
     @InjectRepository(SavedNamingEntity)
-    private readonly savedUserTarotCardsRepository: Repository<SavedNamingEntity>,
+    private readonly savedNamingRepository: Repository<SavedNamingEntity>,
     private readonly openaiService: OpenaiService,
   ) {}
 
   async drawNaming(mainTitle: string, content: string) {
     const naming = await this.openaiService.getNaming(mainTitle, content);
     return { naming };
+  }
+
+  async saveNaming(
+    userId: number,
+    mainTitle: string,
+    namings: { name: string; description: string }[],
+  ) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let namingEntity = await this.namingRepository.findOne({
+      where: { mainTitle, date: today },
+    });
+
+    if (!namingEntity) {
+      namingEntity = this.namingRepository.create({
+        mainTitle,
+        date: today,
+      });
+      namingEntity = await this.namingRepository.save(namingEntity);
+    }
+
+    // Save each naming under the NamingEntity
+    const savedNamings = await Promise.all(
+      namings.map(async (naming) => {
+        const savedNaming = this.savedNamingRepository.create({
+          name: naming.name,
+          description: naming.description,
+          naming: namingEntity,
+          user: { id: userId },
+        });
+        return await this.savedNamingRepository.save(savedNaming);
+      }),
+    );
+
+    return { savedNamings };
   }
 }

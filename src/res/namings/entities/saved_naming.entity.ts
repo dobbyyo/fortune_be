@@ -5,28 +5,29 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
+import { NamingEntity } from './naming.entity';
 import { UsersEntity } from '@res/users/entities/users.entity';
-import { NamingEntity } from '@res/namings/entities/naming.entity';
-import { BaseEntity } from '@/src/common/entities/base.entity';
 
 @Entity('saved_naming')
-export class SavedNamingEntity extends BaseEntity {
+export class SavedNamingEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'int', nullable: false })
-  user_id: number;
+  @Column({ type: 'varchar', length: 255, nullable: false })
+  name: string; // Name associated with the main title
 
-  @Column({ type: 'int', nullable: false })
-  naming_id: number;
+  @Column({ type: 'text', nullable: true })
+  description: string; // Description associated with the name
+
+  @ManyToOne(() => NamingEntity, (naming) => naming.savedNamings, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'naming_id' })
+  naming: NamingEntity; // Reference to the main title
 
   @ManyToOne(() => UsersEntity, (user) => user.savedNamings, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' })
-  user: UsersEntity;
-
-  @ManyToOne(() => NamingEntity, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'naming_id' })
-  naming: NamingEntity;
+  user: UsersEntity; // User who saved the naming
 }
