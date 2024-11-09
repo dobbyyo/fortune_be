@@ -13,9 +13,6 @@ export class SavedDreamInterpretationEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'int', nullable: false })
-  user_id: number;
-
   @Column({ type: 'varchar', length: 255, nullable: true })
   title: string;
 

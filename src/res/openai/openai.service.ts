@@ -71,4 +71,32 @@ export class OpenaiService {
 
     return namingText;
   }
+
+  async getDreamInterpretation(title: string, description: string) {
+    const prompt = `
+    {
+        "
+         1. 주제는 ${title}, 내용은 ${description}인 꿈의 해석을 한국어로 작성해주세요.
+         1. 꿈의 해석을 한국어로 작성해주세요.
+         2. 말투를 재밌게 해줘요
+         3. 현실적이고 실용적인 해석을 해주세요
+         4. 300글자 이내로 작성해줘요
+         5. 꿈의 내용에 따라 다른 해석을 해주세요
+         6. 쉬운말 사용해주세요
+        "
+    }`;
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: '꿈 해몽 요청 시스템입니다.' },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: 300,
+    });
+
+    const interpretationText = response.choices[0].message.content.trim();
+
+    return interpretationText;
+  }
 }

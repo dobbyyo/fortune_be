@@ -28,10 +28,11 @@ export class NamingsController {
   @Get('draw')
   async drawNaming(@Query() drawNamingDto: DrawNamingDto) {
     const { mainTitle, content } = drawNamingDto;
-    const decodedMainTitle = decodeURIComponent(mainTitle); // 한글 디코딩
+    const decodedMainTitle = decodeURIComponent(mainTitle);
+    const decodedContent = decodeURIComponent(content);
     const namingCards = await this.namingsService.drawNaming(
       decodedMainTitle,
-      content,
+      decodedContent,
     );
     return createResponse(200, 'successful', namingCards);
   }

@@ -1,26 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { CreateDreamDto } from '@res/dreams/dto/create-dream.dto';
-import { UpdateDreamDto } from '@res/dreams/dto/update-dream.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { SavedDreamInterpretationEntity } from './entities/saved_dream_interpretation.entity';
+import { Repository } from 'typeorm';
+import { OpenaiService } from '../openai/openai.service';
 
 @Injectable()
 export class DreamsService {
-  create(createDreamDto: CreateDreamDto) {
-    return 'This action adds a new dream';
-  }
+  constructor(
+    @InjectRepository(SavedDreamInterpretationEntity)
+    private readonly savedDreamInterpretationRepository: Repository<SavedDreamInterpretationEntity>,
+    private readonly openaiService: OpenaiService,
+  ) {}
 
-  findAll() {
-    return `This action returns all dreams`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} dream`;
-  }
-
-  update(id: number, updateDreamDto: UpdateDreamDto) {
-    return `This action updates a #${id} dream`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} dream`;
+  async interpretDream(title: string, description: string) {
+    const interpretation = await this.openaiService.getDreamInterpretation(
+      title,
+      description,
+    );
+    return { interpretation };
   }
 }

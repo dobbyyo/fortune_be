@@ -1,42 +1,25 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { CsrfHeaders } from '@/src/utils/csrf-headers.util';
+import { Controller, Get, Query } from '@nestjs/common';
 import { DreamsService } from '@res/dreams/dreams.service';
-import { CreateDreamDto } from '@res/dreams/dto/create-dream.dto';
-import { UpdateDreamDto } from '@res/dreams/dto/update-dream.dto';
+import { InterpretDreamDto } from './dto/interpret-dteam.dto';
+import { createResponse } from '@/src/utils/create-response.util';
 
 @Controller('dreams')
 export class DreamsController {
   constructor(private readonly dreamsService: DreamsService) {}
 
-  @Post()
-  create(@Body() createDreamDto: CreateDreamDto) {
-    return this.dreamsService.create(createDreamDto);
-  }
+  @CsrfHeaders('꿈 해몽')
+  @Get('interpret')
+  async interpretDream(@Query() interpretDreamDto: InterpretDreamDto) {
+    const { title, description } = interpretDreamDto;
+    const decodedTitle = decodeURIComponent(title); // 한글 디코딩
+    const decodedDescription = decodeURIComponent(description); // 한글 디코딩
 
-  @Get()
-  findAll() {
-    return this.dreamsService.findAll();
-  }
+    const interpretation = await this.dreamsService.interpretDream(
+      decodedTitle,
+      decodedDescription,
+    );
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.dreamsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDreamDto: UpdateDreamDto) {
-    return this.dreamsService.update(+id, updateDreamDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.dreamsService.remove(+id);
+    return createResponse(200, 'successful', interpretation);
   }
 }
