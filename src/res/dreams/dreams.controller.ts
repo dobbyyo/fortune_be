@@ -2,6 +2,7 @@ import { CsrfHeaders } from '@/src/utils/csrf-headers.util';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Post,
   Query,
@@ -52,6 +53,22 @@ export class DreamsController {
       mainTitle,
       user_description,
       ai_interpretation,
+    );
+
+    return createResponse(200, 'successful');
+  }
+
+  @AuthAndCsrfHeaders('꿈 해몽 저장 취소')
+  @UseGuards(JwtAuthGuard)
+  @Delete('cancel/:savedDreamInterpretationId')
+  async cancelSavedDreamInterpretation(
+    @Req() req: Request,
+    @Query('savedDreamInterpretationId') savedDreamInterpretationId: number,
+  ) {
+    const { userId } = req.user;
+    await this.dreamsService.cancelSavedDreamInterpretation(
+      userId,
+      savedDreamInterpretationId,
     );
 
     return createResponse(200, 'successful');
