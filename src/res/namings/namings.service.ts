@@ -65,6 +65,10 @@ export class NamingsService {
       where: { id: savedNamingId, user: { id: userId } },
     });
 
+    if (!savedNaming) {
+      throw new NotFoundException(`${savedNamingId}를 찾을 수 없습니다.`);
+    }
+
     const namingId = savedNaming.id;
 
     await this.savedNamingRepository.remove(savedNaming);
@@ -75,10 +79,6 @@ export class NamingsService {
 
     if (!otherReferences) {
       await this.namingRepository.delete(namingId);
-    }
-
-    if (!savedNaming) {
-      throw new NotFoundException(`${savedNamingId}를 찾을 수 없습니다.`);
     }
 
     return 'Successful';
