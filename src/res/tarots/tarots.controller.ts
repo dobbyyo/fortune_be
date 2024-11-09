@@ -27,7 +27,7 @@ export class TarotsController {
   @Get('draw')
   async drawTarot(@Query() drawTarotDto: DrawTarotDto) {
     const { mainTitle } = drawTarotDto;
-    const decodedMainTitle = decodeURIComponent(mainTitle); // 한글 디코딩
+    const decodedMainTitle = decodeURIComponent(mainTitle);
     const tarotCards = await this.tarotsService.drawTarot(decodedMainTitle);
     return createResponse(200, 'successful', tarotCards);
   }
@@ -50,7 +50,7 @@ export class TarotsController {
     @Req() req: Request,
     @Body() saveTarotCardDto: SaveTarotCardDto,
   ) {
-    const { userId } = req.user; // 로그인된 사용자 ID
+    const { userId } = req.user;
 
     const savedCards = await this.tarotsService.saveTarotCards(
       userId,

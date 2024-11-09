@@ -8,7 +8,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-// DTO 예시
 export class SaveTarotCardDto {
   @ApiProperty({
     description: '메인 타이틀 (예: 오늘의 타로)',
@@ -40,7 +39,6 @@ export class SaveTarotCardDto {
   cards: TarotCardDetailDto[];
 }
 
-// 개별 카드 세부 정보
 export class TarotCardDetailDto {
   @ApiProperty({ description: '카드 ID', example: 1 })
   @IsInt()

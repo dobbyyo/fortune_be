@@ -14,20 +14,20 @@ export class SavedNamingEntity {
   id: number;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
-  name: string; // Name associated with the main title
+  name: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string; // Description associated with the name
+  description: string;
 
   @ManyToOne(() => NamingEntity, (naming) => naming.savedNamings, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'naming_id' })
-  naming: NamingEntity; // Reference to the main title
+  naming: NamingEntity;
 
   @ManyToOne(() => UsersEntity, (user) => user.savedNamings, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' })
-  user: UsersEntity; // User who saved the naming
+  user: UsersEntity;
 }

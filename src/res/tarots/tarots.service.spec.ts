@@ -37,7 +37,7 @@ describe('TarotsService', () => {
         {
           provide: OpenaiService,
           useValue: {
-            getTarotCardInterpretation: jest.fn(), // OpenAI 해석 메서드를 모킹
+            getTarotCardInterpretation: jest.fn(),
           },
         },
       ],

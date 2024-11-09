@@ -32,7 +32,7 @@ export class AuthService {
 
     const token = this.jwtService.sign(payload);
 
-    await this.redisService.set(`token:${myInfo.id}`, token, 7200); // 1시간 유효
+    await this.redisService.set(`token:${myInfo.id}`, token, 7200);
     return { access_token: token };
   }
 
@@ -51,12 +51,12 @@ export class AuthService {
     }
     await this.usersService.createUser(user);
 
-    return { message: 'Register success' };
+    return { message: 'successful' };
   }
 
   async logout(userId: number) {
     await this.redisService.del(`token:${userId}`);
 
-    return { message: 'Logout success' };
+    return { message: 'successful' };
   }
 }

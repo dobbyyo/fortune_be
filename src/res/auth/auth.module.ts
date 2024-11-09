@@ -29,6 +29,6 @@ import { RedisService } from '../redis/redis.service';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, RedisService],
-  exports: [AuthService, JwtModule, PassportModule], // AuthService를 외부에서 사용할 수 있도록 설정
+  exports: [AuthService, JwtModule, PassportModule],
 })
 export class AuthModule {}

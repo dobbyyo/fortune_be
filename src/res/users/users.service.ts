@@ -38,25 +38,25 @@ export class UsersService {
       // UsersLanguageEntity 기본값 생성
       const newLanguage = manager.create(UsersLanguageEntity, {
         user_id: savedUser.id,
-        user: savedUser, // 관계 설정
+        user: savedUser,
       });
 
       // UsersNotificationEntity 기본값 생성
       const newNotification = manager.create(UsersNotificationEntity, {
         user_id: savedUser.id,
-        user: savedUser, // 관계 설정
+        user: savedUser,
       });
 
       // UsersProfileEntity 기본값 생성
       const newProfile = manager.create(UsersProfileEntity, {
         user_id: savedUser.id,
-        user: savedUser, // 관계 설정
+        user: savedUser,
       });
 
       // UsersPasswordEntity 기본값 생성
       const newPassword = manager.create(UsersPasswordEntity, {
         user_id: savedUser.id,
-        user: savedUser, // 관계 설정
+        user: savedUser,
       });
 
       // 각 엔티티 저장

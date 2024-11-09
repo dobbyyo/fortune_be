@@ -23,7 +23,7 @@ import { createResponse } from '@/src/utils/create-response.util';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly configService: ConfigService, // Inject ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
   @ApiOperation({ summary: 'CSRF 토큰 발급' })
@@ -42,10 +42,10 @@ export class AuthController {
     description: 'CSRF token for secure requests',
     required: true,
   })
-  @UseGuards(AuthenticatedGuard) // 로그인 상태에서는 접근 불가
+  @UseGuards(AuthenticatedGuard)
   @Post('login')
   async login(
-    @Headers('csrf-token') csrfToken: string, // 요청 헤더에서 CSRF 토큰을 가져옴
+    @Headers('csrf-token') csrfToken: string,
     @Res() res: Response,
     @Body() loginemailDto: LoginEmailDto,
   ) {
@@ -75,7 +75,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: '회원가입 성공' })
   @ApiResponse({ status: 400, description: 'Fail' })
-  @UseGuards(AuthenticatedGuard) // 로그인 상태에서는 접근 불가
+  @UseGuards(AuthenticatedGuard)
   @Post('register')
   async register(
     @Body() createUserDto: CreateUserDto,
@@ -83,7 +83,7 @@ export class AuthController {
     @Req() req: Request,
   ) {
     await this.authService.register(req.body);
-    return createResponse(200, 'Register success');
+    return createResponse(200, 'successful');
   }
 
   @ApiOperation({ summary: '로그아웃' })
@@ -107,7 +107,7 @@ export class AuthController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    await this.authService.logout((req.user as any).userId); // 사용자 ID로 토큰 삭제
+    await this.authService.logout((req.user as any).userId);
 
     // 쿠키에서 access_token 삭제
     res.clearCookie('access_token', {
@@ -118,6 +118,6 @@ export class AuthController {
         'lax',
     });
 
-    return res.status(200).json(createResponse(200, 'Logout success'));
+    return res.status(200).json(createResponse(200, 'successful'));
   }
 }

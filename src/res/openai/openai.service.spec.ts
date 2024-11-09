@@ -52,7 +52,7 @@ describe('OpenaiService', () => {
   });
 
   describe('getNaming', () => {
-    it('should return naming suggestion based on content and mainTitle', async () => {
+    it('maintitle에 따라 결과 값 반환', async () => {
       const result = await service.getNaming(
         '사람',
         '아버지 성함이 김아아입니다. 아들을 위한 이름 추천',

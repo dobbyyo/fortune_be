@@ -46,7 +46,6 @@ export class OpenaiService {
       max_tokens: 500,
     });
 
-    // return response.choices[0].message.content.trim();
     const interpretationText = response.choices[0].message.content.trim();
 
     return interpretationText;
@@ -67,8 +66,7 @@ export class OpenaiService {
       ],
       max_tokens: 300,
     });
-    console.log('res', response.choices[0]);
-    // return response.choices[0].message.content.trim();
+
     const namingText = response.choices[0].message.content.trim();
 
     return namingText;

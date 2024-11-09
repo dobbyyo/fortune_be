@@ -49,7 +49,6 @@ describe('TarotsController', () => {
       const drawTarotDto: DrawTarotDto = { mainTitle: '오늘의 타로' };
       const decodedMainTitle = decodeURIComponent(drawTarotDto.mainTitle);
 
-      // Ensure `type` is explicitly set to either "Major" or "Minor"
       const tarotCardsMock = {
         tarotCards: [
           {
@@ -139,12 +138,12 @@ describe('TarotsController', () => {
           created_at: new Date(),
           updated_at: new Date(),
           card_interpretation: 'Sample interpretation',
-          card: { id: 1, name: 'The Fool' } as TarotCardsEntity, // 카드에 대한 Mock 정보
+          card: { id: 1, name: 'The Fool' } as TarotCardsEntity,
           mainTitle: {
             id: 1,
             title: '오늘의 타로',
-          } as SaveTarotMainTitleEntity, // 메인 타이틀에 대한 Mock 정보
-          user: req.user as UsersEntity, // 유저에 대한 Mock 정보
+          } as SaveTarotMainTitleEntity,
+          user: req.user as UsersEntity,
         } as unknown as SavedUserTarotCardsEntity,
       ];
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NamingEntity } from './entities/naming.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -42,7 +42,6 @@ export class NamingsService {
       namingEntity = await this.namingRepository.save(namingEntity);
     }
 
-    // Save each naming under the NamingEntity
     const savedNamings = await Promise.all(
       namings.map(async (naming) => {
         const savedNaming = this.savedNamingRepository.create({
@@ -56,5 +55,32 @@ export class NamingsService {
     );
 
     return { savedNamings };
+  }
+
+  async cancelSavedNaming(
+    userId: number,
+    savedNamingId: number,
+  ): Promise<string> {
+    const savedNaming = await this.savedNamingRepository.findOne({
+      where: { id: savedNamingId, user: { id: userId } },
+    });
+
+    const namingId = savedNaming.id;
+
+    await this.savedNamingRepository.remove(savedNaming);
+
+    const otherReferences = await this.savedNamingRepository.findOne({
+      where: { naming: { id: namingId } },
+    });
+
+    if (!otherReferences) {
+      await this.namingRepository.delete(namingId);
+    }
+
+    if (!savedNaming) {
+      throw new NotFoundException(`${savedNamingId}를 찾을 수 없습니다.`);
+    }
+
+    return 'Successful';
   }
 }

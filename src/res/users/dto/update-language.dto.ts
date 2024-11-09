@@ -8,7 +8,7 @@ export enum Language {
 
 export class UpdateLanguageDto {
   @ApiProperty({ example: 'KOREAN', description: 'language' })
-  @IsEnum(Language, { message: 'language must be either KOREAN or ENGLISH' })
+  @IsEnum(Language, { message: 'KOREAN or ENGLISH' })
   @IsNotEmpty()
   language: string;
 }

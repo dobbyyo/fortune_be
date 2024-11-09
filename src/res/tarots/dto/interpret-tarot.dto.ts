@@ -1,4 +1,3 @@
-// tarot/dto/tarot-interpretation.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,

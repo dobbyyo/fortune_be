@@ -49,7 +49,7 @@ describe('UsersService', () => {
         {
           provide: DataSource,
           useValue: {
-            transaction: jest.fn().mockImplementation((fn) => fn()), // transaction 더미 구현
+            transaction: jest.fn().mockImplementation((fn) => fn()),
           },
         },
       ],

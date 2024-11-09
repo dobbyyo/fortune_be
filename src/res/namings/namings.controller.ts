@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   Query,
   Req,
@@ -38,15 +40,21 @@ export class NamingsController {
   @UseGuards(JwtAuthGuard)
   @Post('save')
   async saveNaming(@Req() req: Request, @Body() saveNamingDto: SaveNamingDto) {
-    console.log(req.user);
     const { userId } = req.user;
     const { mainTitle, namings } = saveNamingDto;
-    console.log('namings', namings, userId, mainTitle);
-    const savedNamings = await this.namingsService.saveNaming(
-      userId,
-      mainTitle,
-      namings,
-    );
-    return createResponse(200, 'Names saved successfully', savedNamings);
+    await this.namingsService.saveNaming(userId, mainTitle, namings);
+    return createResponse(200, 'successful');
+  }
+
+  @AuthAndCsrfHeaders('작명 취소')
+  @UseGuards(JwtAuthGuard)
+  @Delete('cancel/:savedNamingId')
+  async cancelSavedNaming(
+    @Req() req: Request,
+    @Param('savedNamingId') savedNamingId: number,
+  ) {
+    const { userId } = req.user;
+    await this.namingsService.cancelSavedNaming(userId, savedNamingId);
+    return createResponse(200, 'successful');
   }
 }

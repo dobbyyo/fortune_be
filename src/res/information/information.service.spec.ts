@@ -50,7 +50,7 @@ describe('InformationService', () => {
   });
 
   describe('getInformation', () => {
-    it('should return information successfully', async () => {
+    it('공지사항 가져오기', async () => {
       const query: GetInformationDto = {
         start_date: '2024-11-01',
         end_date: '2024-11-30',
@@ -74,7 +74,7 @@ describe('InformationService', () => {
       });
     });
 
-    it('should throw BadRequestException for invalid date format', async () => {
+    it('잘못된 DTO로 보낼경우 에러 발생', async () => {
       const query: GetInformationDto = {
         start_date: 'invalid-date',
         end_date: '2024-11-30',

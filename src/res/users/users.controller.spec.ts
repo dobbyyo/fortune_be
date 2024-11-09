@@ -108,8 +108,8 @@ describe('UsersController', () => {
     });
   });
 
-  describe('유저 언어 업데이트', () => {
-    it('should update user language setting', async () => {
+  describe('updateLanguage', () => {
+    it('유저 언어 업데이트', async () => {
       const updateLanguageDto: UpdateLanguageDto = { language: 'ENGLISH' };
 
       jest

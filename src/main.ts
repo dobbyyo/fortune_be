@@ -18,8 +18,6 @@ async function bootstrap() {
 
   const config = app.get<ConfigType<typeof appConfig>>(appConfig.KEY);
 
-  // 세션 미들웨어 설정
-
   app.use(helmet()); // 보안을 위한 헤더 설정
   app.use(express.urlencoded({ extended: true })); // body-parser 설정
 
