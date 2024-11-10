@@ -324,4 +324,105 @@ describe('TarotsService', () => {
       });
     });
   });
+
+  describe('cancelSavedTarotCard', () => {
+    it('should cancel saved tarot card and delete main title if no other cards exist', async () => {
+      const userId = 1;
+      const savedCardId = 1;
+      const mockMainTitle = {
+        id: 1,
+        title: "Today's Tarot",
+      } as SaveTarotMainTitleEntity;
+      const mockSavedCard = {
+        id: savedCardId,
+        mainTitle: mockMainTitle,
+      } as SavedUserTarotCardsEntity;
+
+      jest
+        .spyOn(savedUserTarotCardsRepository, 'findOne')
+        .mockResolvedValueOnce(mockSavedCard);
+      jest
+        .spyOn(savedUserTarotCardsRepository, 'remove')
+        .mockResolvedValue(mockSavedCard);
+      jest
+        .spyOn(savedUserTarotCardsRepository, 'find')
+        .mockResolvedValueOnce([]); // No other cards left
+      jest
+        .spyOn(saveTarotMainTitleEntity, 'remove')
+        .mockResolvedValue(mockMainTitle);
+
+      const result = await tarotsService.cancelSavedTarotCard(
+        userId,
+        savedCardId,
+      );
+
+      expect(result).toBe('Successful');
+      expect(savedUserTarotCardsRepository.remove).toHaveBeenCalledWith(
+        mockSavedCard,
+      );
+      expect(saveTarotMainTitleEntity.remove).toHaveBeenCalledWith(
+        mockMainTitle,
+      );
+    });
+
+    it('should throw NotFoundException if saved tarot card is not found', async () => {
+      const userId = 1;
+      const savedCardId = 999;
+
+      jest
+        .spyOn(savedUserTarotCardsRepository, 'findOne')
+        .mockResolvedValue(null);
+
+      await expect(
+        tarotsService.cancelSavedTarotCard(userId, savedCardId),
+      ).rejects.toThrow(
+        new NotFoundException('해당 저장된 타로 카드를 찾을 수 없습니다.'),
+      );
+    });
+
+    it('should only remove saved card if other cards exist under the same main title', async () => {
+      const userId = 1;
+      const savedCardId = 1;
+      const mockMainTitle = {
+        id: 1,
+        title: "Today's Tarot",
+      } as SaveTarotMainTitleEntity;
+      const mockSavedCard = {
+        id: savedCardId,
+        mainTitle: mockMainTitle,
+      } as SavedUserTarotCardsEntity;
+
+      jest
+        .spyOn(savedUserTarotCardsRepository, 'findOne')
+        .mockResolvedValueOnce(mockSavedCard);
+      jest
+        .spyOn(savedUserTarotCardsRepository, 'remove')
+        .mockResolvedValue(mockSavedCard);
+      jest.spyOn(savedUserTarotCardsRepository, 'find').mockResolvedValueOnce([
+        {
+          id: 2,
+          sub_title: 'Other Card',
+          user_id: userId,
+          card_id: 2,
+          is_upright: true,
+          card_interpretation: 'Sample interpretation',
+          mainTitle: mockMainTitle,
+        } as SavedUserTarotCardsEntity, // 최소한의 필수 필드를 추가하여 타입 오류 해결
+      ]);
+      jest
+        .spyOn(saveTarotMainTitleEntity, 'remove')
+        .mockResolvedValue(mockMainTitle);
+
+      const result = await tarotsService.cancelSavedTarotCard(
+        userId,
+        savedCardId,
+      );
+
+      expect(result).toBe('Successful');
+      expect(savedUserTarotCardsRepository.remove).toHaveBeenCalledWith(
+        mockSavedCard,
+      );
+      expect(saveTarotMainTitleEntity.remove).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -58,11 +58,7 @@ export class TarotsController {
       userId,
       saveTarotCardDto,
     );
-    return createResponse(
-      200,
-      '타로 카드가 성공적으로 저장되었습니다.',
-      savedCards,
-    );
+    return createResponse(200, 'Successful', savedCards);
   }
 
   @AuthAndCsrfHeaders('타로 카드 저장 취소')
@@ -74,6 +70,6 @@ export class TarotsController {
   ) {
     const { userId } = req.user;
     await this.tarotsService.cancelSavedTarotCard(userId, savedCardId);
-    return createResponse(200, '타로 카드 저장이 취소되었습니다.');
+    return createResponse(200, 'Successful');
   }
 }

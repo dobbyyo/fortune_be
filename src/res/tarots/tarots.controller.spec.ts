@@ -26,6 +26,7 @@ describe('TarotsController', () => {
             drawTarot: jest.fn(),
             interpretTarotCards: jest.fn(),
             saveTarotCards: jest.fn(),
+            cancelSavedTarotCard: jest.fn(),
           },
         },
       ],
@@ -157,13 +158,34 @@ describe('TarotsController', () => {
       );
 
       expect(result).toEqual(
-        createResponse(200, '타로 카드가 성공적으로 저장되었습니다.', {
+        createResponse(200, 'Successful', {
           savedCards: savedCardsMock,
         }),
       );
       expect(tarotsService.saveTarotCards).toHaveBeenCalledWith(
         1,
         saveTarotCardDto,
+      );
+    });
+  });
+
+  describe('cancelSavedTarotCard', () => {
+    it('타로카드 저장 취소', async () => {
+      const req = { user: { userId: 1 } } as Request;
+      const savedCardId = 1;
+      jest
+        .spyOn(tarotsService, 'cancelSavedTarotCard')
+        .mockResolvedValue('Successful');
+
+      const result = await tarotsController.cancelSavedTarotCard(
+        req,
+        savedCardId,
+      );
+
+      expect(result).toEqual(createResponse(200, 'Successful'));
+      expect(tarotsService.cancelSavedTarotCard).toHaveBeenCalledWith(
+        req.user.userId,
+        savedCardId,
       );
     });
   });
