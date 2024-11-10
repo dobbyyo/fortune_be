@@ -17,11 +17,13 @@ export class NamingsService {
     private readonly openaiService: OpenaiService,
   ) {}
 
+  // 작명 추천
   async drawNaming(mainTitle: string, content: string) {
     const naming = await this.openaiService.getNaming(mainTitle, content);
     return { naming };
   }
 
+  // 작명 저장
   async saveNaming(
     userId: number,
     mainTitle: string,
@@ -57,6 +59,7 @@ export class NamingsService {
     return { savedNamings };
   }
 
+  // 작명 저장 취소
   async cancelSavedNaming(
     userId: number,
     savedNamingId: number,
