@@ -66,22 +66,25 @@ export class NamingsService {
   ): Promise<string> {
     const savedNaming = await this.savedNamingRepository.findOne({
       where: { id: savedNamingId, user: { id: userId } },
+      relations: ['naming'],
     });
 
     if (!savedNaming) {
       throw new NotFoundException(`${savedNamingId}를 찾을 수 없습니다.`);
     }
 
-    const namingId = savedNaming.id;
+    const naming = savedNaming.naming;
 
     await this.savedNamingRepository.remove(savedNaming);
 
+    // 메인 타이틀에 다른 참조가 남아 있는지 확인
     const otherReferences = await this.savedNamingRepository.findOne({
-      where: { naming: { id: namingId } },
+      where: { naming: { id: naming.id } },
     });
 
+    // 남은 참조가 없으면 메인 타이틀 삭제
     if (!otherReferences) {
-      await this.namingRepository.delete(namingId);
+      await this.namingRepository.delete(naming.id);
     }
 
     return 'Successful';

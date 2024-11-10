@@ -177,4 +177,32 @@ export class TarotsService {
 
     return { savedCards };
   }
+
+  // 카드 저장 취소
+  async cancelSavedTarotCard(userId: number, savedCardId: number) {
+    // 저장된 타로 카드 찾기
+    const savedCard = await this.savedUserTarotCardsRepository.findOne({
+      where: { id: savedCardId, user: { id: userId } },
+      relations: ['mainTitle'],
+    });
+
+    if (!savedCard) {
+      throw new NotFoundException('해당 저장된 타로 카드를 찾을 수 없습니다.');
+    }
+
+    const mainTitle = savedCard.mainTitle;
+    await this.savedUserTarotCardsRepository.remove(savedCard);
+
+    // 메인 타이틀에 다른 카드가 남아있는지 확인
+    const remainingCards = await this.savedUserTarotCardsRepository.find({
+      where: { mainTitle: { id: mainTitle.id } },
+    });
+
+    // 남은 카드가 없으면 메인 타이틀 삭제
+    if (remainingCards.length === 0) {
+      await this.saveTarotMainTitleEntity.remove(mainTitle);
+    }
+
+    return 'Successful';
+  }
 }

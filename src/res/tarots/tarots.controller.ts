@@ -2,7 +2,9 @@ import { CsrfHeaders } from '@/src/utils/csrf-headers.util';
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   Query,
   Req,
@@ -61,5 +63,17 @@ export class TarotsController {
       '타로 카드가 성공적으로 저장되었습니다.',
       savedCards,
     );
+  }
+
+  @AuthAndCsrfHeaders('타로 카드 저장 취소')
+  @UseGuards(JwtAuthGuard)
+  @Delete('cancel/:savedCardId')
+  async cancelSavedTarotCard(
+    @Req() req: Request,
+    @Param('savedCardId') savedCardId: number,
+  ) {
+    const { userId } = req.user;
+    await this.tarotsService.cancelSavedTarotCard(userId, savedCardId);
+    return createResponse(200, '타로 카드 저장이 취소되었습니다.');
   }
 }

@@ -91,17 +91,21 @@ describe('NamingsService', () => {
   });
 
   describe('cancelSavedNaming', () => {
-    it('작명 취소', async () => {
+    it('작명 저장 취소', async () => {
       const userId = 1;
       const savedNamingId = 1;
+
+      const mockNaming = { id: 1, mainTitle: '사람' } as NamingEntity;
       const mockSavedNaming = {
         id: savedNamingId,
-        naming: { id: 2 },
+        naming: mockNaming,
       } as SavedNamingEntity;
 
       jest
         .spyOn(savedNamingRepository, 'findOne')
-        .mockResolvedValue(mockSavedNaming);
+        .mockResolvedValueOnce(mockSavedNaming) // 첫 번째 findOne으로 savedNaming 반환
+        .mockResolvedValueOnce(null); // 두 번째 findOne으로 다른 참조 없음(null)
+
       jest
         .spyOn(savedNamingRepository, 'remove')
         .mockResolvedValue(mockSavedNaming);
@@ -110,15 +114,13 @@ describe('NamingsService', () => {
       const result = await service.cancelSavedNaming(userId, savedNamingId);
 
       expect(result).toBe('Successful');
-      expect(savedNamingRepository.findOne).toHaveBeenCalledWith({
-        where: { id: savedNamingId, user: { id: userId } },
-      });
       expect(savedNamingRepository.remove).toHaveBeenCalledWith(
         mockSavedNaming,
       );
+      expect(namingRepository.delete).toHaveBeenCalledWith(mockNaming.id);
     });
 
-    it('작명 id 없을 시 에러 발생', async () => {
+    it('NotFoundException 발생', async () => {
       const userId = 1;
       const savedNamingId = 999;
 
@@ -129,6 +131,34 @@ describe('NamingsService', () => {
       ).rejects.toThrow(
         new NotFoundException(`${savedNamingId}를 찾을 수 없습니다.`),
       );
+    });
+
+    it('또다른 하위 모델에서 데이토 존재 시', async () => {
+      const userId = 1;
+      const savedNamingId = 1;
+
+      const mockNaming = { id: 1, mainTitle: '사람' } as NamingEntity;
+      const mockSavedNaming = {
+        id: savedNamingId,
+        naming: mockNaming,
+      } as SavedNamingEntity;
+
+      jest
+        .spyOn(savedNamingRepository, 'findOne')
+        .mockResolvedValueOnce(mockSavedNaming)
+        .mockResolvedValueOnce(mockSavedNaming);
+      jest
+        .spyOn(savedNamingRepository, 'remove')
+        .mockResolvedValue(mockSavedNaming);
+      jest.spyOn(namingRepository, 'delete').mockResolvedValue(undefined); // 추가된 부분
+
+      const result = await service.cancelSavedNaming(userId, savedNamingId);
+
+      expect(result).toBe('Successful');
+      expect(savedNamingRepository.remove).toHaveBeenCalledWith(
+        mockSavedNaming,
+      );
+      expect(namingRepository.delete).not.toHaveBeenCalled();
     });
   });
 });
