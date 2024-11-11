@@ -39,6 +39,9 @@ export class UsersEntity extends BaseEntity {
   @Column({ type: 'time', nullable: true })
   birth_time: string | null;
 
+  @Column({ type: 'enum', enum: ['양력', '음력'], nullable: true })
+  calendar_type: string;
+
   @OneToOne(() => UsersProfileEntity)
   @JoinColumn()
   profile: UsersProfileEntity;

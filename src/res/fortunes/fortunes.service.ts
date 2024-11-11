@@ -1,26 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { CreateFortuneDto } from '@res/fortunes/dto/create-fortune.dto';
-import { UpdateFortuneDto } from '@res/fortunes/dto/update-fortune.dto';
+import { SandbarEntity } from './entities/sandbar.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { OpenaiService } from '../openai/openai.service';
+import { DrawSandbarDto } from './dto/draw-sandbar.dto';
+import { UserResponse } from '../auth/types/user.type';
+// import { DrawSandbarDto } from './dto/draw-sandbar.dto';
 
 @Injectable()
 export class FortunesService {
-  create(createFortuneDto: CreateFortuneDto) {
-    return 'This action adds a new fortune';
-  }
+  constructor(
+    @InjectRepository(SandbarEntity)
+    private readonly sandbarRepository: Repository<SandbarEntity>,
+    private readonly openaiService: OpenaiService,
+  ) {}
 
-  findAll() {
-    return `This action returns all fortunes`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} fortune`;
-  }
-
-  update(id: number, updateFortuneDto: UpdateFortuneDto) {
-    return `This action updates a #${id} fortune`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} fortune`;
+  async getSandbar(userData: UserResponse, drawSandbarDto: DrawSandbarDto) {
+    const sandbarData = await this.openaiService.getSandbar(
+      userData,
+      drawSandbarDto,
+    );
+    return { sandbarData };
   }
 }

@@ -1,42 +1,30 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { JwtAuthGuard } from '@/src/guards/jwt-auth.guard';
+import { AuthAndCsrfHeaders } from '@/src/utils/auth-csrf-headers.util';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { FortunesService } from '@res/fortunes/fortunes.service';
-import { CreateFortuneDto } from '@res/fortunes/dto/create-fortune.dto';
-import { UpdateFortuneDto } from '@res/fortunes/dto/update-fortune.dto';
+import { Request } from 'express';
+import { DrawSandbarDto } from './dto/draw-sandbar.dto';
+import { createResponse } from '@/src/utils/create-response.util';
 
+@ApiTags('fortunes')
 @Controller('fortunes')
 export class FortunesController {
   constructor(private readonly fortunesService: FortunesService) {}
 
-  @Post()
-  create(@Body() createFortuneDto: CreateFortuneDto) {
-    return this.fortunesService.create(createFortuneDto);
-  }
+  @AuthAndCsrfHeaders('운세 저장')
+  @UseGuards(JwtAuthGuard)
+  @Get('sandbar')
+  async getSaiju(
+    @Query() drawSandbarDto: DrawSandbarDto, // 양력 or 음력
+    @Req() req: Request,
+  ) {
+    const userData = req.user;
+    const sandbarData = await this.fortunesService.getSandbar(
+      userData,
+      drawSandbarDto,
+    );
 
-  @Get()
-  findAll() {
-    return this.fortunesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.fortunesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFortuneDto: UpdateFortuneDto) {
-    return this.fortunesService.update(+id, updateFortuneDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.fortunesService.remove(+id);
+    return createResponse(200, 'successful', sandbarData);
   }
 }

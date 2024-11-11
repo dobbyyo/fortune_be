@@ -2,6 +2,8 @@ import { openaiConfig } from '@/src/config/openai.config';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import OpenAI from 'openai';
+import { DrawSandbarDto } from '../fortunes/dto/draw-sandbar.dto';
+import { UserResponse } from '../auth/types/user.type';
 
 @Injectable()
 export class OpenaiService {
@@ -98,5 +100,67 @@ export class OpenaiService {
     const interpretationText = response.choices[0].message.content.trim();
 
     return interpretationText;
+  }
+
+  async getSandbar(userData: UserResponse, drawSandbarDto: DrawSandbarDto) {
+    const prompt = `
+    아래의 정보를 바탕으로 사주 명식을 계산해 주세요. 반드시 **JSON 형식**으로만 응답해 주세요.
+    
+    - 이름: ${userData.username}
+    - 성별: ${userData.gender}
+    - ${userData.calendar_type}: ${userData.birth_date} ${userData.birth_time} 
+    - 사주 볼 날짜 범위: ${drawSandbarDto.start_date} ~ ${drawSandbarDto.end_date}
+    
+    ### 요구사항:
+    1. 사주의 "year", "month", "day", "hour" 값은 **년주, 월주, 일주, 시주**의 기본 형식으로 고정하고 절대 변경하지 마세요.
+    2. 응답은 다음과 같은 JSON 형식이어야 합니다.
+    {
+      "name": "홍길동",
+      "gender": "남자",
+      "birth": "1990-01-01 태어난 시간: 12:00:22 (양력)",
+      "saJu": {
+        "year": "년주",
+        "month": "월주",
+        "day": "일주",
+        "hour": "시주"
+      },
+      "sipSeong": ["편재", "정재", "정관", "편관"],
+      "cheonGan": [
+        { "name": "갑", "element": "목" },
+        { "name": "병", "element": "화" },
+        { "name": "경", "element": "금" },
+        { "name": "임", "element": "수" }
+      ],
+      "jiJi": [
+        { "name": "자", "element": "수" },
+        { "name": "축", "element": "토" },
+        { "name": "인", "element": "목" },
+        { "name": "묘", "element": "목" }
+      ],
+      "sipSeong_jiJi": ["편관", "정관", "식신", "상관"],
+      "12UnSeong": ["제왕", "목욕", "절", "묘"],
+      "12SinSal": ["천살", "재살", "천살", "재살"]
+    }
+    
+    반드시 위 JSON 형식으로만 응답해 주세요. JSON 형식 이외의 텍스트는 포함하지 마세요.
+    `;
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: '사주 명식 요청 시스템입니다.' },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: 500,
+    });
+
+    const content = response.choices[0].message.content.trim();
+    try {
+      const sandbarData = JSON.parse(content);
+      return sandbarData;
+    } catch (error) {
+      console.error('JSON 파싱 오류:', error);
+      throw new Error('OpenAI가 유효한 JSON 응답을 반환하지 않았습니다.');
+    }
   }
 }

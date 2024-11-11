@@ -16,7 +16,7 @@ import { InterpretDreamDto } from './dto/interpret-dream.dto';
 import { createResponse } from '@/src/utils/create-response.util';
 import { AuthAndCsrfHeaders } from '@/src/utils/auth-csrf-headers.util';
 import { JwtAuthGuard } from '@/src/guards/jwt-auth.guard';
-import { saveInterpretedDreamDto } from './dto/save-interpreted-dream.dto';
+import { SaveInterpretedDreamDto } from './dto/save-interpreted-dream.dto';
 
 @ApiTags('Dreams')
 @Controller('dreams')
@@ -43,8 +43,9 @@ export class DreamsController {
   @Post('save')
   async saveInterpretedDream(
     @Req() req: Request,
-    @Body() saveInterpretedDreamDto: saveInterpretedDreamDto,
+    @Body() saveInterpretedDreamDto: SaveInterpretedDreamDto,
   ) {
+    console.log('userId', req.user);
     const { userId } = req.user;
     const { mainTitle, user_description, ai_interpretation } =
       saveInterpretedDreamDto;

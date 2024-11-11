@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class saveInterpretedDreamDto {
+export class SaveInterpretedDreamDto {
   @ApiProperty({ description: 'AI 꿈 해몽 타이틀', example: '사람/행동' })
   @IsNotEmpty()
   @IsString()
