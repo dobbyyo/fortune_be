@@ -9,6 +9,7 @@ import { FortuneCalculationService } from './fortunes-calculation.service';
 import { EarthlyBranchesEntity } from './entities/earthly_baranches.entity';
 import { HeavenlyStemsEntity } from './entities/heavenly_stems.entity';
 import { ZodiacFortuneEntity } from './entities/zodiac_fortune.entity';
+import { StarSignFortuneEntity } from './entities/star_sign_fortune.entity';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ZodiacFortuneEntity } from './entities/zodiac_fortune.entity';
       EarthlyBranchesEntity,
       HeavenlyStemsEntity,
       ZodiacFortuneEntity,
+      StarSignFortuneEntity,
     ]),
   ],
   controllers: [FortunesController],

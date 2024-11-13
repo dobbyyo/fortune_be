@@ -18,7 +18,6 @@ export class AuthService {
 
   async validateUserByEmail(email: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-
     if (!user) {
       throw new UnauthorizedException('해당 유저가 존재하지 않습니다.');
     }

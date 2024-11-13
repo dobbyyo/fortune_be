@@ -4,6 +4,7 @@ import { ConfigType } from '@nestjs/config';
 import OpenAI from 'openai';
 import { GetTodayFortunesType } from '../fortunes/types/get-today-fortunes.type';
 import { ZodiacFortuneEntity } from '../fortunes/entities/zodiac_fortune.entity';
+import { StarSignFortuneEntity } from '../fortunes/entities/star_sign_fortune.entity';
 
 @Injectable()
 export class OpenaiService {
@@ -239,6 +240,44 @@ export class OpenaiService {
     try {
       const getZodiacFortunesData = JSON.parse(content);
       return getZodiacFortunesData;
+    } catch (error) {
+      console.error('JSON 파싱 오류:', error);
+      throw new Error('OpenAI가 유효한 JSON 응답을 반환하지 않았습니다.');
+    }
+  }
+
+  async getConstellationFortunes(constellation: StarSignFortuneEntity) {
+    const prompt = `
+      1. 사용자의 별자리 정보:
+      {
+        "별자리 이름": "${constellation.name}",
+      }
+
+      2. 위의 별자리 정보를 활용하여 아래 질문에 대답해주세요:
+        - ${constellation.name}의 오늘의 별자리를 가진 사람들의 공통적인 특징
+        - ${constellation.name}의 오늘의 운세를 알려주세요
+
+      3. JSON 형식으로 다음 포맷에 맞게 응답해주세요.
+      ### 출력 포맷 (JSON 형식):
+      {
+        "constellationGeneral": "해당 별자리의 공통적인 설명",
+        "constellationToday": "오늘의 ${constellation.name} 별자리 운세 설명"
+      }
+      4. 강력: 정확한 JSON 형식으로 응답하세요.
+    `;
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: '별자리 운세 요청 시스템입니다.' },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: 500,
+    });
+    const content = response.choices[0].message.content.trim();
+    try {
+      const getConstellationFortunesData = JSON.parse(content);
+      return getConstellationFortunesData;
     } catch (error) {
       console.error('JSON 파싱 오류:', error);
       throw new Error('OpenAI가 유효한 JSON 응답을 반환하지 않았습니다.');

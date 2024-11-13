@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SandbarEntity } from './entities/sandbar.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { OpenaiService } from '../openai/openai.service';
 
 import { UserResponse } from '../auth/types/user.type';
@@ -12,6 +12,7 @@ import { RedisService } from '../redis/redis.service';
 import { GetTodayFortunesType } from './types/get-today-fortunes.type';
 import { ZodiacFortuneEntity } from './entities/zodiac_fortune.entity';
 import { todayYear } from '@/src/utils/today.util';
+import { StarSignFortuneEntity } from './entities/star_sign_fortune.entity';
 
 @Injectable()
 export class FortunesService {
@@ -24,6 +25,8 @@ export class FortunesService {
     private readonly heavenlyStemsRepository: Repository<HeavenlyStemsEntity>,
     @InjectRepository(ZodiacFortuneEntity)
     private readonly zodiacFortuneRepository: Repository<ZodiacFortuneEntity>,
+    @InjectRepository(StarSignFortuneEntity)
+    private readonly starSignFortuneRepository: Repository<StarSignFortuneEntity>,
     private readonly openaiService: OpenaiService,
     private readonly fortuneCalculationService: FortuneCalculationService,
     private readonly redisService: RedisService,
@@ -162,11 +165,55 @@ export class FortunesService {
     }
     const today = todayYear();
 
-    const res = await this.openaiService.getZodiacFortunes(
+    const aiRes = await this.openaiService.getZodiacFortunes(
       zodiacFortune,
       today,
     );
 
-    return { zodiacFortune: res };
+    const response = {
+      ...zodiacFortune,
+      ...aiRes,
+    };
+
+    return { zodiacFortune: response };
+  }
+
+  async getConstellationFortunes(birthDate: string) {
+    const monthDay = birthDate.slice(5).replace('-', '.');
+
+    const constellation = await this.starSignFortuneRepository
+      .createQueryBuilder('star_sign_fortune')
+      .where(
+        new Brackets((qb) => {
+          qb.where('star_sign_fortune.start_date <= :monthDay', {
+            monthDay,
+          }).andWhere('star_sign_fortune.end_date >= :monthDay', { monthDay });
+        }),
+      )
+      .orWhere(
+        new Brackets((qb) => {
+          qb.where('star_sign_fortune.start_date > star_sign_fortune.end_date') // 달을 넘기는 경우 (예: 12.25 - 01.19)
+            .andWhere(
+              new Brackets((qb) => {
+                qb.where('star_sign_fortune.start_date <= :monthDay', {
+                  monthDay,
+                }).orWhere('star_sign_fortune.end_date >= :monthDay', {
+                  monthDay,
+                });
+              }),
+            );
+        }),
+      )
+      .getOne();
+
+    const aiRes =
+      await this.openaiService.getConstellationFortunes(constellation);
+
+    const response = {
+      ...constellation,
+      ...aiRes,
+    };
+
+    return { constellation: response };
   }
 }

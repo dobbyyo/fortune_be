@@ -88,4 +88,24 @@ export class FortunesController {
 
     return createResponse(200, 'successful', zodiacData);
   }
+
+  @AuthAndCsrfHeaders('별자리 운세')
+  @UseGuards(JwtAuthGuard)
+  @Get('constellation')
+  async getConstellationFortunes(
+    @Query() drawSandbarDto: GetTodayFortunesDto,
+    @Req() req: Request,
+  ) {
+    const userData = req.user;
+    const birthDate = userData.birth_date;
+
+    if (Number(userData.userId) !== Number(drawSandbarDto.userId)) {
+      return createResponse(400, 'error', '사용자 정보가 일치하지 않습니다');
+    }
+
+    const constellationData =
+      await this.fortunesService.getConstellationFortunes(birthDate);
+
+    return createResponse(200, 'successful', constellationData);
+  }
 }
