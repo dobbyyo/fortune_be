@@ -45,7 +45,6 @@ export class DreamsController {
     @Req() req: Request,
     @Body() saveInterpretedDreamDto: SaveInterpretedDreamDto,
   ) {
-    console.log('userId', req.user);
     const { userId } = req.user;
     const { mainTitle, user_description, ai_interpretation } =
       saveInterpretedDreamDto;

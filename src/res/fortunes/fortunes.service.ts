@@ -10,6 +10,8 @@ import { EarthlyBranchesEntity } from './entities/earthly_baranches.entity';
 import { HeavenlyStemsEntity } from './entities/heavenly_stems.entity';
 import { RedisService } from '../redis/redis.service';
 import { GetTodayFortunesType } from './types/get-today-fortunes.type';
+import { ZodiacFortuneEntity } from './entities/zodiac_fortune.entity';
+import { todayYear } from '@/src/utils/today.util';
 
 @Injectable()
 export class FortunesService {
@@ -20,6 +22,8 @@ export class FortunesService {
     private readonly earthlyBranchesRepository: Repository<EarthlyBranchesEntity>,
     @InjectRepository(HeavenlyStemsEntity)
     private readonly heavenlyStemsRepository: Repository<HeavenlyStemsEntity>,
+    @InjectRepository(ZodiacFortuneEntity)
+    private readonly zodiacFortuneRepository: Repository<ZodiacFortuneEntity>,
     private readonly openaiService: OpenaiService,
     private readonly fortuneCalculationService: FortuneCalculationService,
     private readonly redisService: RedisService,
@@ -136,9 +140,33 @@ export class FortunesService {
     }
 
     const explanationData = await this.openaiService.getTodayFortunes(
-      userData,
       fortunesData as GetTodayFortunesType,
     );
     return { explanationData };
+  }
+
+  async getZodiacFortunes(birthDate: string) {
+    const year = birthDate.split('-')[0];
+
+    const zodiacFortune = await this.zodiacFortuneRepository.findOne({
+      where: [
+        {
+          rest: Number(year) % 12, // 띠의 시작 연도를 12로 나눈 나머지를 통해 찾기
+          cycle: 12, // 띠가 12년 주기로 반복되므로 주기를 지정
+        },
+      ],
+    });
+
+    if (!zodiacFortune) {
+      throw new Error('해당 연도에 맞는 띠 운세가 없습니다.');
+    }
+    const today = todayYear();
+
+    const res = await this.openaiService.getZodiacFortunes(
+      zodiacFortune,
+      today,
+    );
+
+    return { zodiacFortune: res };
   }
 }

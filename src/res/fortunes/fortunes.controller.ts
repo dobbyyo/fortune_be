@@ -12,7 +12,7 @@ import { createResponse } from '@/src/utils/create-response.util';
 export class FortunesController {
   constructor(private readonly fortunesService: FortunesService) {}
 
-  @AuthAndCsrfHeaders('운세 저장')
+  @AuthAndCsrfHeaders('오늘의 운세 뽑기')
   @UseGuards(JwtAuthGuard)
   @Get('today')
   async getTodayFortunes(
@@ -68,5 +68,24 @@ export class FortunesController {
       );
 
     return createResponse(200, 'successful', explanationData);
+  }
+
+  @AuthAndCsrfHeaders('띠 운세')
+  @UseGuards(JwtAuthGuard)
+  @Get('zodiac')
+  async getZodiacFortunes(
+    @Query() drawSandbarDto: GetTodayFortunesDto,
+    @Req() req: Request,
+  ) {
+    const userData = req.user;
+    const birthDate = userData.birth_date;
+
+    if (Number(userData.userId) !== Number(drawSandbarDto.userId)) {
+      return createResponse(400, 'error', '사용자 정보가 일치하지 않습니다');
+    }
+
+    const zodiacData = await this.fortunesService.getZodiacFortunes(birthDate);
+
+    return createResponse(200, 'successful', zodiacData);
   }
 }

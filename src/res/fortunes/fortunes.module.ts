@@ -8,6 +8,7 @@ import { RedisService } from '../redis/redis.service';
 import { FortuneCalculationService } from './fortunes-calculation.service';
 import { EarthlyBranchesEntity } from './entities/earthly_baranches.entity';
 import { HeavenlyStemsEntity } from './entities/heavenly_stems.entity';
+import { ZodiacFortuneEntity } from './entities/zodiac_fortune.entity';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { HeavenlyStemsEntity } from './entities/heavenly_stems.entity';
       SandbarEntity,
       EarthlyBranchesEntity,
       HeavenlyStemsEntity,
+      ZodiacFortuneEntity,
     ]),
   ],
   controllers: [FortunesController],

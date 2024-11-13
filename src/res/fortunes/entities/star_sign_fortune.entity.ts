@@ -5,12 +5,15 @@ export class StarSignFortuneEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 20, nullable: false })
-  star_sign: string;
+  @Column({ type: 'varchar', length: 10, nullable: false })
+  name: string;
 
-  @Column({ type: 'text', nullable: true })
-  star_main_description: string;
+  @Column({ type: 'varchar', length: 10, nullable: false })
+  start_date: string;
 
-  @Column({ type: 'text', nullable: true })
-  star_sub_description: string;
+  @Column({ type: 'varchar', length: 10, nullable: false })
+  end_date: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: false })
+  image_url: string;
 }

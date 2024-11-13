@@ -2,9 +2,8 @@ import { openaiConfig } from '@/src/config/openai.config';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import OpenAI from 'openai';
-
-import { UserResponse } from '../auth/types/user.type';
 import { GetTodayFortunesType } from '../fortunes/types/get-today-fortunes.type';
+import { ZodiacFortuneEntity } from '../fortunes/entities/zodiac_fortune.entity';
 
 @Injectable()
 export class OpenaiService {
@@ -103,11 +102,7 @@ export class OpenaiService {
     return interpretationText;
   }
 
-  async getTodayFortunes(
-    userData: UserResponse,
-    fortunesData: GetTodayFortunesType,
-  ) {
-    console.log(fortunesData);
+  async getTodayFortunes(fortunesData: GetTodayFortunesType) {
     const fortune = fortunesData.fortunesData;
 
     const prompt = `
@@ -187,6 +182,63 @@ export class OpenaiService {
     try {
       const sandbarData = JSON.parse(content);
       return sandbarData;
+    } catch (error) {
+      console.error('JSON 파싱 오류:', error);
+      throw new Error('OpenAI가 유효한 JSON 응답을 반환하지 않았습니다.');
+    }
+  }
+
+  async getZodiacFortunes(zodiacFortune: ZodiacFortuneEntity, today: number) {
+    const startYear = zodiacFortune.start_year;
+    const cycle = zodiacFortune.cycle;
+
+    const yearList = [];
+    for (
+      let year = startYear + 12 * 2;
+      Number(year) <= Number(today);
+      year += cycle
+    ) {
+      yearList.push(year);
+    }
+
+    const prompt = `
+      1. 사용자의 띠 정보:
+      {
+        "띠 이름": "${zodiacFortune.name}",
+        "띠 정보": "${zodiacFortune.info}",
+        "해당 띠의 연도들": "${yearList.join(', ')}",
+        "오늘 날짜": "${today}"
+      }
+
+      2. 위의 띠 정보를 활용하여 오늘 날짜와 대입하여 아래 질문에 대답해주세요:
+        - ${zodiacFortune.name}의 특징에 대한 설명
+        - ${zodiacFortune.name}의 띠를 가진 사람들의 공통적인 특징
+        - 오늘 날짜와 해당 띠의 연도별 특징을 대입하여 오늘의 운세를 알려주세요
+
+      3. JSON 형식으로 다음 포맷에 맞게 응답해주세요.
+      ### 출력 포맷 (JSON 형식):
+      {
+        "zodiacGeneral": "해당 띠의 공통적인 설명",
+        "zodiacToday": "오늘 날짜를 대입한 ${zodiacFortune.name}에 대한 운세",
+        "yearlyFortunes": {
+          ${yearList.map((year) => `"${year}": "해당 연도에 속한 ${zodiacFortune.name} 띠의 특징"`).join(',\n')}
+        }
+      }
+      4. 강력: 정확한 JSON 형식으로 응답하세요.
+    `;
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: '띠 운세 요청 시스템입니다.' },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: 500,
+    });
+    const content = response.choices[0].message.content.trim();
+    try {
+      const getZodiacFortunesData = JSON.parse(content);
+      return getZodiacFortunesData;
     } catch (error) {
       console.error('JSON 파싱 오류:', error);
       throw new Error('OpenAI가 유효한 JSON 응답을 반환하지 않았습니다.');
