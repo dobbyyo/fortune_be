@@ -2,8 +2,9 @@ import { openaiConfig } from '@/src/config/openai.config';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import OpenAI from 'openai';
-import { DrawSandbarDto } from '../fortunes/dto/draw-sandbar.dto';
+
 import { UserResponse } from '../auth/types/user.type';
+import { GetTodayFortunesType } from '../fortunes/types/get-today-fortunes.type';
 
 @Injectable()
 export class OpenaiService {
@@ -102,47 +103,76 @@ export class OpenaiService {
     return interpretationText;
   }
 
-  async getSandbar(userData: UserResponse, drawSandbarDto: DrawSandbarDto) {
+  async getTodayFortunes(
+    userData: UserResponse,
+    fortunesData: GetTodayFortunesType,
+  ) {
+    console.log(fortunesData);
+    const fortune = fortunesData.fortunesData;
+
     const prompt = `
-    아래의 정보를 바탕으로 사주 명식을 계산해 주세요. 반드시 **JSON 형식**으로만 응답해 주세요.
-    
-    - 이름: ${userData.username}
-    - 성별: ${userData.gender}
-    - ${userData.calendar_type}: ${userData.birth_date} ${userData.birth_time} 
-    - 사주 볼 날짜 범위: ${drawSandbarDto.start_date} ~ ${drawSandbarDto.end_date}
-    
-    ### 요구사항:
-    1. 사주의 "year", "month", "day", "hour" 값은 **년주, 월주, 일주, 시주**의 기본 형식으로 고정하고 절대 변경하지 마세요.
-    2. 응답은 다음과 같은 JSON 형식이어야 합니다.
+    1. 사용자 사주 정보:
     {
-      "name": "홍길동",
-      "gender": "남자",
-      "birth": "1990-01-01 태어난 시간: 12:00:22 (양력)",
-      "saJu": {
-        "year": "년주",
-        "month": "월주",
-        "day": "일주",
-        "hour": "시주"
+      "천간에 대한 십성": {
+        "년주": "${fortune.heavenlyStemTenGod.year}",
+        "월주": "${fortune.heavenlyStemTenGod.month}",
+        "일주": "${fortune.heavenlyStemTenGod.day}",
+        "시주": "${fortune.heavenlyStemTenGod.hour}"
       },
-      "sipSeong": ["편재", "정재", "정관", "편관"],
-      "cheonGan": [
-        { "name": "갑", "element": "목" },
-        { "name": "병", "element": "화" },
-        { "name": "경", "element": "금" },
-        { "name": "임", "element": "수" }
-      ],
-      "jiJi": [
-        { "name": "자", "element": "수" },
-        { "name": "축", "element": "토" },
-        { "name": "인", "element": "목" },
-        { "name": "묘", "element": "목" }
-      ],
-      "sipSeong_jiJi": ["편관", "정관", "식신", "상관"],
-      "12UnSeong": ["제왕", "목욕", "절", "묘"],
-      "12SinSal": ["천살", "재살", "천살", "재살"]
+      "천간": {
+        "년주": "${fortune.heavenly.year}, ${fortune.heavenly.elements.baseElements.year}",
+        "월주": "${fortune.heavenly.month}, ${fortune.heavenly.elements.baseElements.month}",
+        "일주": "${fortune.heavenly.day}, ${fortune.heavenly.elements.baseElements.day}",
+        "시주": "${fortune.heavenly.hour}, ${fortune.heavenly.elements.baseElements.hour}"
+      },
+      "지지": {
+        "년주": "${fortune.earthly.year}, ${fortune.earthly.elements.baseElements.year}",
+        "월주": "${fortune.earthly.month}, ${fortune.earthly.elements.baseElements.month}",
+        "일주": "${fortune.earthly.day}, ${fortune.earthly.elements.baseElements.day}",
+        "시주": "${fortune.earthly.hour}, ${fortune.earthly.elements.baseElements.hour}"
+      },
+      "지지에 대한 십성": {
+        "년주": "${fortune.earthlyBranchTenGod.year}",
+        "월주": "${fortune.earthlyBranchTenGod.month}",
+        "일주": "${fortune.earthlyBranchTenGod.day}",
+        "시주": "${fortune.earthlyBranchTenGod.hour}"
+      },
+      "12운성": {
+        "년주": "${fortune.tenStemTwelveStates.year}",
+        "월주": "${fortune.tenStemTwelveStates.month}",
+        "일주": "${fortune.tenStemTwelveStates.day}",
+        "시주": "${fortune.tenStemTwelveStates.hour}"
+      },
+      "12신살": {
+        "년주": "${fortune.twelveGod.year}",
+        "월주": "${fortune.twelveGod.month}",
+        "일주": "${fortune.twelveGod.day}",
+        "시주": "${fortune.twelveGod.hour}"
+      }
     }
     
-    반드시 위 JSON 형식으로만 응답해 주세요. JSON 형식 이외의 텍스트는 포함하지 마세요.
+    2. 위의 사주 정보를 활용하여 아래 질문에 대답해주세요:
+      - 총운
+      - 재물운
+      - 연애운
+      - 사업운
+      - 건강운
+      - 학업운
+      - 행운의 요소 2가지
+      - 행운의 코디 제안
+    
+    3. JSON 형식으로 다음 포맷에 맞게 응답해주세요.
+    ### 출력 포맷 (JSON 형식):
+    {
+      "generalFortune": "총운 해석",
+      "wealthFortune": "재물운 해석",
+      "loveFortune": "연애운 해석",
+      "careerFortune": "사업운 해석",
+      "healthFortune": "건강운 해석",
+      "studyFortune": "학업운 해석",
+      "luckyElements": ["행운의 요소 1", "행운의 요소 2"],
+      "luckyOutfit": "행운의 코디 아이템 또는 색상 등"
+    }
     `;
 
     const response = await this.openai.chat.completions.create({
@@ -153,7 +183,6 @@ export class OpenaiService {
       ],
       max_tokens: 500,
     });
-
     const content = response.choices[0].message.content.trim();
     try {
       const sandbarData = JSON.parse(content);

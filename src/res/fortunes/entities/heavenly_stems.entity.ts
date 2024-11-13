@@ -15,9 +15,6 @@ export class HeavenlyStemsEntity {
   })
   element: '목' | '화' | '토' | '금' | '수';
 
-  @Column({ type: 'enum', enum: ['음', '양'], nullable: false })
-  yin_yang: '음' | '양';
-
   @Column({ type: 'varchar', length: 255, nullable: false })
   image_url: string;
 }

@@ -8,6 +8,8 @@ import { UserResponse } from '../auth/types/user.type';
 import { FortuneCalculationService } from './fortunes-calculation.service';
 import { EarthlyBranchesEntity } from './entities/earthly_baranches.entity';
 import { HeavenlyStemsEntity } from './entities/heavenly_stems.entity';
+import { RedisService } from '../redis/redis.service';
+import { GetTodayFortunesType } from './types/get-today-fortunes.type';
 
 @Injectable()
 export class FortunesService {
@@ -20,6 +22,7 @@ export class FortunesService {
     private readonly heavenlyStemsRepository: Repository<HeavenlyStemsEntity>,
     private readonly openaiService: OpenaiService,
     private readonly fortuneCalculationService: FortuneCalculationService,
+    private readonly redisService: RedisService,
   ) {}
 
   private async fetchDatabaseEarthlyInfo(
@@ -29,8 +32,9 @@ export class FortunesService {
     for (const [key, element] of Object.entries(elements)) {
       const data = await this.earthlyBranchesRepository.findOne({
         where: { element },
+        select: ['image_url'],
       });
-      elementData[key] = data;
+      elementData[key] = data.image_url;
     }
     return elementData;
   }
@@ -42,25 +46,34 @@ export class FortunesService {
     for (const [key, element] of Object.entries(elements)) {
       const data = await this.heavenlyStemsRepository.findOne({
         where: { element },
+        select: ['image_url'],
       });
-      elementData[key] = data;
+      elementData[key] = data.image_url;
     }
     return elementData;
   }
 
-  async getSandbar(
+  async getTodayForunes(
     userData: UserResponse,
     birthDate: string,
     birthHour: number,
     birthMinute: number,
   ) {
+    const redisKey = `fortunesData:${userData.userId}`;
+
+    // Redis에서 캐시된 데이터가 있는지 확인
+    const cachedData = await this.redisService.get(redisKey);
+    if (cachedData) {
+      return { fortunesData: cachedData };
+    }
+
     const fortunesData = this.fortuneCalculationService.calculateFourPillars(
       birthDate,
       birthHour,
       birthMinute,
     );
 
-    // 각 요소별로 DB 정보를 불러와서 elements에 추가
+    // imgurl db에서 호출
     const heavenlyElementData = await this.fetchDatabaseHeavenlyInfo(
       fortunesData.heavenly.elements,
     );
@@ -74,7 +87,7 @@ export class FortunesService {
         ...fortunesData.heavenly,
         elements: {
           baseElements: fortunesData.heavenly.elements,
-          databaseInfo: {
+          img: {
             year: heavenlyElementData.year,
             month: heavenlyElementData.month,
             day: heavenlyElementData.day,
@@ -86,7 +99,7 @@ export class FortunesService {
         ...fortunesData.earthly,
         elements: {
           baseElements: fortunesData.earthly.elements,
-          databaseInfo: {
+          img: {
             year: earthlyElementData.year,
             month: earthlyElementData.month,
             day: earthlyElementData.day,
@@ -96,6 +109,36 @@ export class FortunesService {
       },
     };
 
+    await this.redisService.set(redisKey, { fortunesData: response }, 3600);
+
     return { fortunesData: response };
+  }
+
+  async getTodayForunesExplanation(
+    userData: UserResponse,
+    birthDate: string,
+    birthHour: number,
+    birthMinute: number,
+  ) {
+    const redisKey = `fortunesData:${userData.userId}`;
+
+    let fortunesData = await this.redisService.get(redisKey);
+
+    // 캐시가 없을 경우 다시 계산하고 저장
+    if (!fortunesData) {
+      fortunesData = await this.getTodayForunes(
+        userData,
+        birthDate,
+        birthHour,
+        birthMinute,
+      );
+      await this.redisService.set(redisKey, fortunesData, 3600); // TTL: 1시간
+    }
+
+    const explanationData = await this.openaiService.getTodayFortunes(
+      userData,
+      fortunesData as GetTodayFortunesType,
+    );
+    return { explanationData };
   }
 }

@@ -4,7 +4,7 @@ import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { FortunesService } from '@res/fortunes/fortunes.service';
 import { Request } from 'express';
-import { DrawSandbarDto } from './dto/draw-sandbar.dto';
+import { GetTodayFortunesDto } from './dto/get-today-fortunes.dto';
 import { createResponse } from '@/src/utils/create-response.util';
 
 @ApiTags('fortunes')
@@ -15,7 +15,10 @@ export class FortunesController {
   @AuthAndCsrfHeaders('운세 저장')
   @UseGuards(JwtAuthGuard)
   @Get('today')
-  async getSaiju(@Query() drawSandbarDto: DrawSandbarDto, @Req() req: Request) {
+  async getTodayFortunes(
+    @Query() drawSandbarDto: GetTodayFortunesDto,
+    @Req() req: Request,
+  ) {
     const userData = req.user;
 
     if (Number(userData.userId) !== Number(drawSandbarDto.userId)) {
@@ -28,7 +31,7 @@ export class FortunesController {
     const birthHour = parseInt(birthTime.split(':')[0]);
     const birthMinute = parseInt(birthTime.split(':')[1]);
 
-    const sandbarData = await this.fortunesService.getSandbar(
+    const sandbarData = await this.fortunesService.getTodayForunes(
       userData,
       birthDate,
       birthHour,
@@ -36,5 +39,34 @@ export class FortunesController {
     );
 
     return createResponse(200, 'successful', sandbarData);
+  }
+
+  @AuthAndCsrfHeaders('운세 풀이')
+  @UseGuards(JwtAuthGuard)
+  @Get('explanation')
+  async getExplanation(
+    @Query() drawSandbarDto: GetTodayFortunesDto,
+    @Req() req: Request,
+  ) {
+    const userData = req.user;
+    const birthDate = userData.birth_date;
+    const birthTime = userData.birth_time;
+
+    const birthHour = parseInt(birthTime.split(':')[0]);
+    const birthMinute = parseInt(birthTime.split(':')[1]);
+
+    if (Number(userData.userId) !== Number(drawSandbarDto.userId)) {
+      return createResponse(400, 'error', '사용자 정보가 일치하지 않습니다');
+    }
+
+    const explanationData =
+      await this.fortunesService.getTodayForunesExplanation(
+        userData,
+        birthDate,
+        birthHour,
+        birthMinute,
+      );
+
+    return createResponse(200, 'successful', explanationData);
   }
 }
