@@ -14,15 +14,25 @@ export class FortunesController {
 
   @AuthAndCsrfHeaders('운세 저장')
   @UseGuards(JwtAuthGuard)
-  @Get('sandbar')
-  async getSaiju(
-    @Query() drawSandbarDto: DrawSandbarDto, // 양력 or 음력
-    @Req() req: Request,
-  ) {
+  @Get('today')
+  async getSaiju(@Query() drawSandbarDto: DrawSandbarDto, @Req() req: Request) {
     const userData = req.user;
+
+    if (Number(userData.userId) !== Number(drawSandbarDto.userId)) {
+      return createResponse(400, 'error', '사용자 정보가 일치하지 않습니다');
+    }
+
+    const birthDate = userData.birth_date;
+    const birthTime = userData.birth_time;
+
+    const birthHour = parseInt(birthTime.split(':')[0]);
+    const birthMinute = parseInt(birthTime.split(':')[1]);
+
     const sandbarData = await this.fortunesService.getSandbar(
       userData,
-      drawSandbarDto,
+      birthDate,
+      birthHour,
+      birthMinute,
     );
 
     return createResponse(200, 'successful', sandbarData);
