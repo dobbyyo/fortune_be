@@ -8,9 +8,9 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { UsersEntity } from '@res/users/entities/users.entity';
-import { SandbarEntity } from '@res/fortunes/entities/sandbar.entity';
-import { ZodiacFortuneEntity } from '@res/fortunes/entities/zodiac_fortune.entity';
-import { StarSignFortuneEntity } from '@res/fortunes/entities/star_sign_fortune.entity';
+import { SavedFortunesEntity } from '@/src/res/fortunes/entities/saved_fortunes.entity';
+import { SavedZodiacEntity } from '@res/fortunes/entities/saved_zodiac.entity';
+import { SavedStarEntity } from '@res/fortunes/entities/saved_star.entity';
 
 @Entity('saved_sandbar')
 export class SavedSandbarsEntity extends BaseEntity {
@@ -41,15 +41,15 @@ export class SavedSandbarsEntity extends BaseEntity {
   @JoinColumn({ name: 'user_id' })
   user: UsersEntity;
 
-  @ManyToOne(() => SandbarEntity, { onDelete: 'CASCADE' })
+  @ManyToOne(() => SavedFortunesEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'todays_fortune_id' })
-  todays_fortune: SandbarEntity;
+  todays_fortune: SavedFortunesEntity;
 
-  @ManyToOne(() => ZodiacFortuneEntity, { onDelete: 'CASCADE' })
+  @ManyToOne(() => SavedZodiacEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'zodiac_fortune_id' })
-  zodiac_fortune: ZodiacFortuneEntity;
+  zodiac_fortune: SavedZodiacEntity;
 
-  @ManyToOne(() => StarSignFortuneEntity, { onDelete: 'CASCADE' })
+  @ManyToOne(() => SavedStarEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'star_sign_fortune_id' })
-  star_sign_fortune: StarSignFortuneEntity;
+  star_sign_fortune: SavedStarEntity;
 }

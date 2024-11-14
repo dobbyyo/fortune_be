@@ -37,7 +37,7 @@ import { NamingEntity } from './res/namings/entities/naming.entity';
 import { ZodiacFortuneEntity } from './res/fortunes/entities/zodiac_fortune.entity';
 import { StarSignFortuneEntity } from './res/fortunes/entities/star_sign_fortune.entity';
 import { SavedSandbarsEntity } from './res/fortunes/entities/saved_sandbars.entity';
-import { SandbarEntity } from './res/fortunes/entities/sandbar.entity';
+import { SavedFortunesEntity } from './res/fortunes/entities/saved_fortunes.entity';
 import { HeavenlyStemsEntity } from './res/fortunes/entities/heavenly_stems.entity';
 import { EarthlyBranchesEntity } from './res/fortunes/entities/earthly_baranches.entity';
 import { SavedDreamInterpretationEntity } from './res/dreams/entities/saved_dream_interpretation.entity';
@@ -49,6 +49,8 @@ import { WebInformationEntity } from './res/information/entities/web_information
 import { OpenaiModule } from './res/openai/openai.module';
 import { openaiConfig } from './config/openai.config';
 import { SaveTarotMainTitleEntity } from './res/tarots/entities/saved_tarot_main_title.entity';
+import { SavedStarEntity } from './res/fortunes/entities/saved_star.entity';
+import { SavedZodiacEntity } from './res/fortunes/entities/saved_zodiac.entity';
 
 @Module({
   imports: [
@@ -92,7 +94,9 @@ import { SaveTarotMainTitleEntity } from './res/tarots/entities/saved_tarot_main
           ZodiacFortuneEntity,
           StarSignFortuneEntity,
           SavedSandbarsEntity,
-          SandbarEntity,
+          SavedFortunesEntity,
+          SavedStarEntity,
+          SavedZodiacEntity,
           HeavenlyStemsEntity,
           EarthlyBranchesEntity,
           SavedDreamInterpretationEntity,

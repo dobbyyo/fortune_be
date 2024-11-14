@@ -46,6 +46,7 @@ export class OpenaiService {
         { role: 'system', content: '타로 카드 해석 요청 시스템입니다.' },
         { role: 'user', content: prompt },
       ],
+      response_format: { type: 'json_object' }, // JSON 형식을 강제
       max_tokens: 500,
     });
 
@@ -67,6 +68,7 @@ export class OpenaiService {
         { role: 'system', content: 'AI 작명 요청 시스템입니다.' },
         { role: 'user', content: prompt },
       ],
+      response_format: { type: 'json_object' }, // JSON 형식을 강제
       max_tokens: 300,
     });
 
@@ -95,6 +97,7 @@ export class OpenaiService {
         { role: 'system', content: '꿈 해몽 요청 시스템입니다.' },
         { role: 'user', content: prompt },
       ],
+      response_format: { type: 'json_object' }, // JSON 형식을 강제
       max_tokens: 300,
     });
 
@@ -154,7 +157,7 @@ export class OpenaiService {
       - 사업운
       - 건강운
       - 학업운
-      - 행운의 요소 2가지
+      - 행운을 가져오는 것들 예(김밥, 빨간색)
       - 행운의 코디 제안
     
     3. JSON 형식으로 다음 포맷에 맞게 응답해주세요.
@@ -177,6 +180,7 @@ export class OpenaiService {
         { role: 'system', content: '사주 명식 요청 시스템입니다.' },
         { role: 'user', content: prompt },
       ],
+      response_format: { type: 'json_object' }, // JSON 형식을 강제
       max_tokens: 500,
     });
     const content = response.choices[0].message.content.trim();
@@ -234,6 +238,7 @@ export class OpenaiService {
         { role: 'system', content: '띠 운세 요청 시스템입니다.' },
         { role: 'user', content: prompt },
       ],
+      response_format: { type: 'json_object' }, // JSON 형식을 강제
       max_tokens: 500,
     });
     const content = response.choices[0].message.content.trim();
@@ -272,8 +277,11 @@ export class OpenaiService {
         { role: 'system', content: '별자리 운세 요청 시스템입니다.' },
         { role: 'user', content: prompt },
       ],
+      response_format: { type: 'json_object' }, // JSON 형식을 강제
+
       max_tokens: 500,
     });
+
     const content = response.choices[0].message.content.trim();
     try {
       const getConstellationFortunesData = JSON.parse(content);

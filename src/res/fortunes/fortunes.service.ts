@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { SandbarEntity } from './entities/sandbar.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 import { OpenaiService } from '../openai/openai.service';
@@ -13,12 +12,16 @@ import { GetTodayFortunesType } from './types/get-today-fortunes.type';
 import { ZodiacFortuneEntity } from './entities/zodiac_fortune.entity';
 import { todayYear } from '@/src/utils/today.util';
 import { StarSignFortuneEntity } from './entities/star_sign_fortune.entity';
+import { SaveSandbarDto } from './dto/save-today-fortunes.dto';
+import { SavedFortunesEntity } from './entities/saved_fortunes.entity';
+import { SavedStarEntity } from './entities/saved_star.entity';
+import { SavedZodiacEntity } from './entities/saved_zodiac.entity';
+import { SavedSandbarsEntity } from './entities/saved_sandbars.entity';
+import { toSnakeCaseKeys } from '@/src/utils/lodash-change.util';
 
 @Injectable()
 export class FortunesService {
   constructor(
-    @InjectRepository(SandbarEntity)
-    private readonly sandbarRepository: Repository<SandbarEntity>,
     @InjectRepository(EarthlyBranchesEntity)
     private readonly earthlyBranchesRepository: Repository<EarthlyBranchesEntity>,
     @InjectRepository(HeavenlyStemsEntity)
@@ -27,6 +30,16 @@ export class FortunesService {
     private readonly zodiacFortuneRepository: Repository<ZodiacFortuneEntity>,
     @InjectRepository(StarSignFortuneEntity)
     private readonly starSignFortuneRepository: Repository<StarSignFortuneEntity>,
+
+    @InjectRepository(SavedFortunesEntity)
+    private readonly fortunesRepository: Repository<SavedFortunesEntity>,
+    @InjectRepository(SavedStarEntity)
+    private readonly starRepository: Repository<SavedStarEntity>,
+    @InjectRepository(SavedZodiacEntity)
+    private readonly zodiacRepository: Repository<SavedZodiacEntity>,
+    @InjectRepository(SavedSandbarsEntity)
+    private readonly sandbarRepository: Repository<SavedSandbarsEntity>,
+
     private readonly openaiService: OpenaiService,
     private readonly fortuneCalculationService: FortuneCalculationService,
     private readonly redisService: RedisService,
@@ -215,5 +228,26 @@ export class FortunesService {
     };
 
     return { constellation: response };
+  }
+
+  async saveFortunes(saveSandbarDto: SaveSandbarDto) {
+    const todaysFortuneData = toSnakeCaseKeys(saveSandbarDto.todaysFortune);
+    const zodiacFortuneData = toSnakeCaseKeys(saveSandbarDto.zodiacFortune);
+    const starSignFortuneData = toSnakeCaseKeys(saveSandbarDto.starSignFortune);
+
+    const savedTodaysFortune =
+      await this.fortunesRepository.save(todaysFortuneData);
+    const savedZodiac = await this.zodiacRepository.save(zodiacFortuneData);
+    const savedStarSign = await this.starRepository.save(starSignFortuneData);
+
+    const savedSandbar = this.sandbarRepository.create({
+      user_id: saveSandbarDto.userId,
+      title: saveSandbarDto.title,
+      todays_fortune_id: savedTodaysFortune.id,
+      zodiac_fortune_id: savedZodiac.id,
+      star_sign_fortune_id: savedStarSign.id,
+    });
+
+    return await this.sandbarRepository.save(savedSandbar);
   }
 }
