@@ -6,7 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@res/users/users.service';
 import { RedisService } from '../redis/redis.service';
-import { User } from './types/user.type';
+import { User, UserResponse } from './types/user.type';
 
 @Injectable()
 export class AuthService {
@@ -16,8 +16,17 @@ export class AuthService {
     private readonly redisService: RedisService,
   ) {}
 
+  private verifyToken(token: string) {
+    try {
+      return this.jwtService.verify(token);
+    } catch (error) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
   async validateUserByEmail(email: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
+
     if (!user) {
       throw new UnauthorizedException('해당 유저가 존재하지 않습니다.');
     }
@@ -38,10 +47,43 @@ export class AuthService {
       calendar_type: myInfo.calendar_type,
     };
 
-    const token = this.jwtService.sign(payload);
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '2h' });
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
 
-    await this.redisService.set(`token:${myInfo.id}`, token, 7200);
-    return { access_token: token };
+    await this.redisService.set(`token:${myInfo.id}`, accessToken, 7200);
+    await this.redisService.set(
+      `refreshToken:${myInfo.id}`,
+      refreshToken,
+      604800,
+    ); // 7일
+
+    return { accessToken, refreshToken };
+  }
+
+  async refreshAccessToken(refreshToken: string, userData: UserResponse) {
+    const payload = this.verifyToken(refreshToken);
+
+    const redisToken = await this.redisService.get(
+      `refreshToken:${payload.userId}`,
+    );
+    if (!redisToken || redisToken !== refreshToken) {
+      throw new UnauthorizedException('만료된 토큰이거나 잘못된 토큰입니다.');
+    }
+
+    const newAccessToken = this.jwtService.sign(
+      {
+        userId: userData.userId,
+        email: userData.email,
+        username: userData.username,
+        gender: userData.gender,
+        birth_date: userData.birth_date,
+        birth_time: userData.birth_time,
+        calendar_type: userData.calendar_type,
+      },
+      { expiresIn: '2h' },
+    );
+
+    return { newAccessToken };
   }
 
   async register(user: {

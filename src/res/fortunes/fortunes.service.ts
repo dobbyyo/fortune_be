@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, Repository } from 'typeorm';
 import { OpenaiService } from '../openai/openai.service';
@@ -18,6 +22,7 @@ import { SavedStarEntity } from './entities/saved_star.entity';
 import { SavedZodiacEntity } from './entities/saved_zodiac.entity';
 import { SavedSandbarsEntity } from './entities/saved_sandbars.entity';
 import { toSnakeCaseKeys } from '@/src/utils/lodash-change.util';
+import { DeleteSandbarDto } from './dto/delete-sandbar.dto';
 
 @Injectable()
 export class FortunesService {
@@ -248,6 +253,36 @@ export class FortunesService {
       star_sign_fortune_id: savedStarSign.id,
     });
 
-    return await this.sandbarRepository.save(savedSandbar);
+    const response = await this.sandbarRepository.save(savedSandbar);
+    return { savedSandbar: response };
+  }
+
+  async deleteSandbar(deleteSandbarDto: DeleteSandbarDto) {
+    const { sandbarId, userId } = deleteSandbarDto;
+    console.log(sandbarId, userId);
+    const savedSandbar = await this.sandbarRepository.findOne({
+      where: { id: sandbarId, user_id: userId },
+    });
+    console.log(savedSandbar);
+    if (!savedSandbar) {
+      throw new NotFoundException('해당 사주 정보가 없습니다.');
+    }
+
+    if (Number(savedSandbar.user_id) !== Number(userId)) {
+      throw new ForbiddenException('사용자 정보가 일치하지 않습니다.');
+    }
+
+    // 관련된 운세 엔티티 삭제
+    await this.fortunesRepository.delete(savedSandbar.todays_fortune_id);
+    await this.zodiacRepository.delete(savedSandbar.zodiac_fortune_id);
+    await this.starRepository.delete(savedSandbar.star_sign_fortune_id);
+
+    // 최종적으로 SavedSandbarsEntity 삭제
+    await this.sandbarRepository.delete({
+      id: sandbarId,
+      user_id: userId,
+    });
+
+    return 'Successfully';
   }
 }
