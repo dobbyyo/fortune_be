@@ -14,18 +14,23 @@ import {
   elementsTable,
 } from '@/src/define/fortune.type';
 import * as holidayKR from 'holiday-kr';
-import * as fs from 'fs';
-import * as path from 'path';
+import { InjectRepository } from '@nestjs/typeorm';
+import { SpringDatesEntity } from './entities/spring.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class FortuneCalculationService {
-  private springDates = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '../src/define/spring.json'), 'utf8'),
-  );
+  constructor(
+    @InjectRepository(SpringDatesEntity)
+    private readonly springDatesRepository: Repository<SpringDatesEntity>,
+  ) {}
 
   // 춘추 날짜를 가져오는 함수
-  private getIpchunDate(year: number): Date | null {
-    return this.springDates[year] ? new Date(this.springDates[year]) : null;
+  private async getIpchunDate(year: number): Promise<Date | null> {
+    const springDate = await this.springDatesRepository.findOne({
+      where: { year },
+    });
+    return springDate ? springDate.date : null;
   }
 
   // 음력 날짜를 양력 날짜로 변환
@@ -55,8 +60,8 @@ export class FortuneCalculationService {
   }
 
   // 연간 기둥 계산 함수
-  private calculateYearPillar(year: number, birthDate: string) {
-    const ipchunDate = this.getIpchunDate(year);
+  private async calculateYearPillar(year: number, birthDate: string) {
+    const ipchunDate = await this.getIpchunDate(year);
     const birth = new Date(birthDate);
     const isBeforeIpchun = birth < ipchunDate;
     const effectiveYear = isBeforeIpchun ? year - 1 : year;
@@ -144,7 +149,7 @@ export class FortuneCalculationService {
     return twelveGodsTable[element][index];
   }
 
-  calculateFourPillars(
+  async calculateFourPillars(
     birthDate: string,
     birthHour: number,
     birthMinute: number,
@@ -152,7 +157,7 @@ export class FortuneCalculationService {
     const birthYear = new Date(birthDate).getFullYear();
 
     // 기본 사주 정보 계산
-    const yearPillar = this.calculateYearPillar(birthYear, birthDate);
+    const yearPillar = await this.calculateYearPillar(birthYear, birthDate);
 
     const monthPillar = this.calculateMonthPillar(
       yearPillar.yearStem,

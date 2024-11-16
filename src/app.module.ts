@@ -51,6 +51,9 @@ import { openaiConfig } from './config/openai.config';
 import { SaveTarotMainTitleEntity } from './res/tarots/entities/saved_tarot_main_title.entity';
 import { SavedStarEntity } from './res/fortunes/entities/saved_star.entity';
 import { SavedZodiacEntity } from './res/fortunes/entities/saved_zodiac.entity';
+import { SpringDatesEntity } from './res/fortunes/entities/spring.entity';
+
+console.log('node env:', process.env.NODE_ENV);
 
 @Module({
   imports: [
@@ -102,6 +105,7 @@ import { SavedZodiacEntity } from './res/fortunes/entities/saved_zodiac.entity';
           SavedDreamInterpretationEntity,
           WebInformationEntity,
           SaveTarotMainTitleEntity,
+          SpringDatesEntity,
         ],
         migrations: configService.get<string[]>('database.migrations'), // 마이그레이션 경로 설정
         migrationsTableName: configService.get<string>(

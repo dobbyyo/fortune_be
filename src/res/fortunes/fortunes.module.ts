@@ -13,6 +13,7 @@ import { StarSignFortuneEntity } from './entities/star_sign_fortune.entity';
 import { SavedStarEntity } from './entities/saved_star.entity';
 import { SavedZodiacEntity } from './entities/saved_zodiac.entity';
 import { SavedSandbarsEntity } from './entities/saved_sandbars.entity';
+import { SpringDatesEntity } from './entities/spring.entity';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { SavedSandbarsEntity } from './entities/saved_sandbars.entity';
       SavedStarEntity,
       SavedZodiacEntity,
       SavedSandbarsEntity,
+      SpringDatesEntity,
     ]),
   ],
   controllers: [FortunesController],

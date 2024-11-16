@@ -92,11 +92,12 @@ export class FortunesService {
       return { fortunesData: cachedData };
     }
 
-    const fortunesData = this.fortuneCalculationService.calculateFourPillars(
-      birthDate,
-      birthHour,
-      birthMinute,
-    );
+    const fortunesData =
+      await this.fortuneCalculationService.calculateFourPillars(
+        birthDate,
+        birthHour,
+        birthMinute,
+      );
 
     // imgurl db에서 호출
     const heavenlyElementData = await this.fetchDatabaseHeavenlyInfo(
@@ -259,11 +260,11 @@ export class FortunesService {
 
   async deleteSandbar(deleteSandbarDto: DeleteSandbarDto) {
     const { sandbarId, userId } = deleteSandbarDto;
-    console.log(sandbarId, userId);
+
     const savedSandbar = await this.sandbarRepository.findOne({
       where: { id: sandbarId, user_id: userId },
     });
-    console.log(savedSandbar);
+
     if (!savedSandbar) {
       throw new NotFoundException('해당 사주 정보가 없습니다.');
     }

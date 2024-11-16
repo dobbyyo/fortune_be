@@ -8,12 +8,13 @@ const logDir = __dirname + '/../../logs';
 // NestJS에서 사용하는 레벨을 포함한 커스텀 레벨 설정
 const levels = {
   error: 0,
-  warn: 1,
-  info: 2,
-  log: 3,
-  verbose: 4,
-  debug: 5,
+  debug: 1,
+  warn: 2,
+  info: 3,
+  data: 4,
+  verbose: 5,
   silly: 6,
+  custom: 7,
 };
 
 // 날짜별 파일 옵션 설정
