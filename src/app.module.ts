@@ -81,9 +81,10 @@ console.log('node env:', process.env.NODE_ENV);
         username: configService.get<string>('database.username'),
         password: configService.get<string>('database.password'),
         database: configService.get<string>('database.database'),
-        synchronize: configService.get<boolean>('database.synchronize'),
+        synchronize: false,
         logging: configService.get<boolean>('database.logging'),
-
+        charset: 'utf8mb4', // 문자셋 설정
+        collation: 'utf8mb4_general_ci', // 콜레이션 설정
         entities: [
           UsersEntity,
           UsersProfileEntity,
