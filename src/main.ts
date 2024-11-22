@@ -23,8 +23,8 @@ async function bootstrap() {
 
   app.useGlobalPipes(new CustomValidationPipe()); // 전역 유효성 검사 파이프 등록
   app.enableCors({
-    origin: '*', // 설명: 허용할 오리진을 설정합니다. 기본값은 '*'입니다.
-    credentials: true, // 설명: 자격 증명을 허용할지 여부를 설정합니다. 기본값은 false입니다.
+    origin: 'http://localhost:3000',
+    credentials: true,
   });
   app.use(helmet());
 

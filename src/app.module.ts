@@ -52,8 +52,7 @@ import { SaveTarotMainTitleEntity } from './res/tarots/entities/saved_tarot_main
 import { SavedStarEntity } from './res/fortunes/entities/saved_star.entity';
 import { SavedZodiacEntity } from './res/fortunes/entities/saved_zodiac.entity';
 import { SpringDatesEntity } from './res/fortunes/entities/spring.entity';
-
-console.log('node env:', process.env.NODE_ENV);
+import kakaoConfig from './config/kakao.config';
 
 @Module({
   imports: [
@@ -61,7 +60,14 @@ console.log('node env:', process.env.NODE_ENV);
       cache: true, // 설명: 환경변수를 캐싱할지 여부를 설정합니다.
       isGlobal: true, // 설명: true로 설정하면 모듈이 전역으로 설정됩니다.
       envFilePath: `.env.${process.env.NODE_ENV}`, // 설명: 환경변수 파일의 경로를 설정합니다.
-      load: [appConfig, dbConfig, awsConfig, redisConfig, openaiConfig],
+      load: [
+        appConfig,
+        dbConfig,
+        awsConfig,
+        redisConfig,
+        openaiConfig,
+        kakaoConfig,
+      ],
     }),
 
     ThrottlerModule.forRoot([

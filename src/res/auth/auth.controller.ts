@@ -8,6 +8,8 @@ import {
   Headers,
   UseGuards,
   UnauthorizedException,
+  BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
@@ -130,5 +132,37 @@ export class AuthController {
     });
 
     return res.status(200).json(createResponse(200, 'successful'));
+  }
+
+  @CsrfHeaders('유저 존재 여부 확인')
+  @Get('kakao/callback')
+  async kakaoCallback(@Query('code') code: string) {
+    console.log('kakaoCallback');
+    console.log('accessToken', code);
+    if (!code) {
+      throw new BadRequestException('successful');
+    }
+
+    // 1. 카카오로부터 액세스 토큰 받기
+    const accessToken = await this.authService.getAccessToken(code);
+    if (!accessToken) {
+      throw new BadRequestException('successful');
+    }
+
+    console.log('accessToken', accessToken);
+
+    // 2. 액세스 토큰으로 사용자 정보 가져오기
+    const kakaoUser = await this.authService.getKakaoUserInfo(accessToken);
+    console.log('kakaoUser', kakaoUser);
+
+    if (!kakaoUser) {
+      throw new BadRequestException('successful');
+    }
+
+    // 3. 사용자 존재 여부 확인 및 처리
+    const result = await this.authService.handleKakaoUser(kakaoUser);
+
+    // 4. 응답 생성
+    return createResponse(200, 'successful', result);
   }
 }

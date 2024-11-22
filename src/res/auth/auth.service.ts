@@ -1,5 +1,8 @@
 import {
   ConflictException,
+  HttpException,
+  HttpStatus,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -7,6 +10,9 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@res/users/users.service';
 import { RedisService } from '../redis/redis.service';
 import { User, UserResponse } from './types/user.type';
+import axios from 'axios';
+import { ConfigType } from '@nestjs/config';
+import kakaoConfig from '@/src/config/kakao.config';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +20,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
+    @Inject(kakaoConfig.KEY) private config: ConfigType<typeof kakaoConfig>,
   ) {}
 
   private verifyToken(token: string) {
@@ -108,5 +115,75 @@ export class AuthService {
     await this.redisService.del(`token:${userId}`);
 
     return { message: 'successful' };
+  }
+
+  async getAccessToken(code: string): Promise<any> {
+    try {
+      const params = new URLSearchParams();
+      params.append('grant_type', 'authorization_code');
+      params.append('client_id', this.config.KAKAO_CLIENT_ID);
+      params.append('redirect_uri', this.config.KAKAO_REDIRECT_URI);
+      params.append('code', code);
+
+      const response = await axios.post(this.config.KAKAO_TOKEN_URL, params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        '카카오 토큰 인증실패',
+        error.response?.data || error.message,
+      );
+      throw new HttpException(
+        'Kakao Access Token 요청 실패',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async getKakaoUserInfo(accessToken: {
+    access_token: string;
+  }): Promise<any | null> {
+    try {
+      const res = await axios.get(this.config.KAKAO_USER_INFO_URL, {
+        headers: {
+          Authorization: `Bearer ${accessToken.access_token}`,
+          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+        },
+      });
+      console.log('res', res);
+      return res.data;
+    } catch (error) {
+      console.error('Failed to fetch Kakao user info:', error.message);
+      return null;
+    }
+  }
+
+  async handleKakaoUser(kakaoUser: any) {
+    const email = kakaoUser.kakao_account?.email;
+    const nickname = kakaoUser.kakao_account?.profile?.nickname;
+
+    if (!email) {
+      throw new Error('Email is required for login/signup');
+    }
+
+    // 사용자 존재 여부 확인
+    const { myInfo } = await this.validateUserByEmail(email);
+    console.log('user', myInfo);
+    if (myInfo) {
+      return {
+        userExist: true,
+      };
+    } else {
+      // 회원가입 처리 정보 반환
+      return {
+        userExist: false,
+        email,
+        nickname,
+      };
+    }
   }
 }
