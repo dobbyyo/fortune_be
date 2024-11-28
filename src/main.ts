@@ -9,6 +9,7 @@ import { winstonLogger } from '@src/utils/logger.util';
 import { CustomValidationPipe } from '@src/pipe/validation.pipe';
 import { AllExceptionsFilter } from './filters/exception.filter';
 import * as express from 'express';
+import * as cookieParser from 'cookie-parser';
 
 declare const module: any;
 
@@ -20,7 +21,7 @@ async function bootstrap() {
 
   app.use(helmet()); // 보안을 위한 헤더 설정
   app.use(express.urlencoded({ extended: true })); // body-parser 설정
-
+  app.use(cookieParser()); // 쿠키 파서 설정
   app.useGlobalPipes(new CustomValidationPipe()); // 전역 유효성 검사 파이프 등록
   app.enableCors({
     origin: 'http://localhost:3000',

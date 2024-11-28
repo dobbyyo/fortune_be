@@ -19,7 +19,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     this.logger.error(`Exception: ${exception}`);
     response.status(status).json({
-      statusCode: status,
+      status: status,
       timestamp: new Date().toISOString(),
       message:
         exception instanceof HttpException

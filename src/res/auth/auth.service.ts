@@ -94,6 +94,7 @@ export class AuthService {
   }
 
   async register(user: {
+    avatar: string;
     username: string;
     provider: string;
     email: string;
@@ -154,7 +155,7 @@ export class AuthService {
           'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
         },
       });
-      console.log('res', res);
+
       return res.data;
     } catch (error) {
       console.error('Failed to fetch Kakao user info:', error.message);
@@ -163,8 +164,11 @@ export class AuthService {
   }
 
   async handleKakaoUser(kakaoUser: any) {
-    const email = kakaoUser.kakao_account?.email;
-    const nickname = kakaoUser.kakao_account?.profile?.nickname;
+    console.log(kakaoUser);
+
+    const email = kakaoUser.kakao_account.email;
+    const nickname = kakaoUser.properties.nickname;
+    const avatar = kakaoUser.properties.profile_image;
 
     if (!email) {
       throw new Error('Email is required for login/signup');
@@ -172,10 +176,13 @@ export class AuthService {
 
     // 사용자 존재 여부 확인
     const { myInfo } = await this.validateUserByEmail(email);
-    console.log('user', myInfo);
+
     if (myInfo) {
       return {
         userExist: true,
+        email,
+        nickname,
+        avatar,
       };
     } else {
       // 회원가입 처리 정보 반환
@@ -183,6 +190,7 @@ export class AuthService {
         userExist: false,
         email,
         nickname,
+        avatar,
       };
     }
   }

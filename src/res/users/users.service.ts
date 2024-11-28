@@ -8,6 +8,7 @@ import { UsersNotificationEntity } from './entities/users_notification.entity';
 import { UsersPasswordEntity } from './entities/users_password.entity';
 import { UsersProfileEntity } from './entities/users_profile.entity';
 import { UpdateLanguageDto } from './dto/update-language.dto';
+import { CreateUserDto } from '../auth/dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -29,7 +30,7 @@ export class UsersService {
   }
 
   // 회원가입
-  async createUser(userDto: Partial<UsersEntity>): Promise<UsersEntity> {
+  async createUser(userDto: CreateUserDto): Promise<UsersEntity> {
     return await this.dataSource.transaction(async (manager) => {
       // UsersEntity 저장
       const newUser = manager.create(UsersEntity, userDto);
@@ -50,6 +51,7 @@ export class UsersService {
       // UsersProfileEntity 기본값 생성
       const newProfile = manager.create(UsersProfileEntity, {
         user_id: savedUser.id,
+        profile_url: userDto.avatar,
         user: savedUser,
       });
 

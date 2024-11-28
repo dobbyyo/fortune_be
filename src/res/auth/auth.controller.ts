@@ -35,6 +35,16 @@ export class AuthController {
   @Get('csrf-token')
   async getCsrfToken(@Req() req: Request, @Res() res: Response) {
     const csrfToken = req.csrfToken(); // CSRF 토큰 생성
+    console.log('configService', this.configService.get('app.HTTP_ONLY'));
+    console.log('configService', this.configService.get('app.SECURE'));
+    console.log('configService', this.configService.get('app.SAME_SITE'));
+    res.cookie('csrf-token', csrfToken, {
+      httpOnly: false,
+      secure: false,
+      sameSite: 'lax',
+      // this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
+      // 'lax',
+    });
 
     return res
       .status(200)
@@ -52,26 +62,37 @@ export class AuthController {
     const user = await this.authService.validateUserByEmail(
       loginemailDto.email,
     );
+    const myInfo = user.myInfo;
     const { accessToken, refreshToken } = await this.authService.login(user);
 
     res.cookie('access_token', accessToken, {
-      httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
-      secure: this.configService.get<boolean>('app.SECURE'),
-      sameSite:
-        this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
-        'lax',
+      httpOnly: false,
+      secure: false,
+      sameSite: 'lax',
+      // httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
+      // secure: this.configService.get<boolean>('app.SECURE'),
+      // sameSite:
+      //   this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
+      //   'lax',
     });
     res.cookie('refresh_token', refreshToken, {
-      httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
-      secure: this.configService.get<boolean>('app.SECURE'),
-      sameSite:
-        this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
-        'lax',
+      httpOnly: false,
+      secure: false,
+      sameSite: 'lax',
+      // httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
+      // secure: this.configService.get<boolean>('app.SECURE'),
+      // sameSite:
+      //   this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
+      //   'lax',
     });
 
-    return res
-      .status(200)
-      .json(createResponse(200, 'successful', { accessToken, refreshToken }));
+    return res.status(200).json(
+      createResponse(200, 'successful', {
+        accessToken,
+        refreshToken,
+        myInfo,
+      }),
+    );
   }
 
   @AuthAndCsrfHeaders('리프레시 토큰으로 엑세스 토큰 재발급')
@@ -102,12 +123,8 @@ export class AuthController {
   @CsrfHeaders('회원가입')
   @UseGuards(AuthenticatedGuard)
   @Post('register')
-  async register(
-    @Body() createUserDto: CreateUserDto,
-    @Headers('csrf-token') csrfToken: string,
-    @Req() req: Request,
-  ) {
-    await this.authService.register(req.body);
+  async register(@Body() createUserDto: CreateUserDto) {
+    await this.authService.register(createUserDto);
     return createResponse(200, 'successful');
   }
 
@@ -156,7 +173,7 @@ export class AuthController {
     console.log('kakaoUser', kakaoUser);
 
     if (!kakaoUser) {
-      throw new BadRequestException('successful');
+      throw new BadRequestException('not found kakao user');
     }
 
     // 3. 사용자 존재 여부 확인 및 처리

@@ -31,4 +31,9 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   birth_time: string;
+
+  @ApiProperty({ example: 'https://naver.com', description: 'avatar' })
+  @IsString()
+  @IsNotEmpty()
+  avatar: string;
 }

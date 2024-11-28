@@ -19,6 +19,7 @@ export class UsersController {
   async getMyInfo(@Req() req: Request) {
     const email = req.user.email;
     const user = await this.usersService.findByEmail(email);
+
     return createResponse(200, 'successful', user);
   }
 
