@@ -25,19 +25,23 @@ export class OpenaiService {
     subTitle: string,
   ) {
     const prompt = `{
-    "name": "${cardName}",
-    "meaning": "${meaning}",
-    "subTitle": "${subTitle}",
-    "interpretation": 
-      "
-       1. 타로 카드의 해석을 subTitle에 맞게 한국어로 작성해주세요.
-       2. 말투를 재밌게 해줘요
-       3. 현실적이고 실용적인 해석을 해주세요
-       4. 300글자 이내로 작성해줘요
-       5. subTitle에 따라 다른 해석을 해주세요
-       6. subTitle이 연애운일 경우 연애중인 사람과, 연애중이 아닌 사람에 대한 해석을 해주세요.
-       7. 쉬운말 사용해주세요
-      "
+      "name": "${cardName}",
+      "meaning": "${meaning}",
+      "subTitle": "${subTitle}",
+      "interpretation": "아래 조건에 맞게 JSON 형식으로 작성해주세요. JSON 예시는 다음과 같습니다: {
+        'name': '${cardName}',
+        'meaning': '${meaning}',
+        'subTitle': '${subTitle}',
+        'interpretation': '카드 해석 내용'
+      }
+      조건:
+      1. 타로 카드의 해석을 subTitle에 맞게 한국어로 작성해주세요.
+      2. 말투를 재밌게 해주세요.
+      3. 현실적이고 실용적인 해석을 해주세요.
+      4. 300글자 이내로 작성해주세요.
+      5. subTitle에 따라 다른 해석을 해주세요.
+      6. subTitle이 '연애운'일 경우 연애 중인 사람과 연애 중이 아닌 사람 모두에 대한 해석을 작성해주세요.
+      7. 쉬운말을 사용해주세요."
     }`;
 
     const response = await this.openai.chat.completions.create({
@@ -52,7 +56,13 @@ export class OpenaiService {
 
     const interpretationText = response.choices[0].message.content.trim();
 
-    return interpretationText;
+    try {
+      const interpretationData = JSON.parse(interpretationText);
+      return interpretationData;
+    } catch (error) {
+      console.error('JSON 파싱 오류:', error);
+      throw new Error('OpenAI가 유효한 JSON 응답을 반환하지 않았습니다.');
+    }
   }
 
   async getNaming(mainTitle: string, content: string) {
