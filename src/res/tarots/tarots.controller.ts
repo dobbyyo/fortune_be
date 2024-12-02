@@ -63,12 +63,13 @@ export class TarotsController {
 
   @AuthAndCsrfHeaders('타로 카드 저장 취소')
   @UseGuards(JwtAuthGuard)
-  @Delete('cancel/:savedCardId')
+  @Delete('cancle/:savedCardId')
   async cancelSavedTarotCard(
     @Req() req: Request,
     @Param('savedCardId') savedCardId: number,
   ) {
     const { userId } = req.user;
+    console.log(userId, savedCardId);
     await this.tarotsService.cancelSavedTarotCard(userId, savedCardId);
     return createResponse(200, 'Successful');
   }
