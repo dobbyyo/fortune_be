@@ -98,14 +98,16 @@ export class FortunesService {
         birthHour,
         birthMinute,
       );
-
+    console.log('fortunesData', fortunesData);
     // imgurl db에서 호출
     const heavenlyElementData = await this.fetchDatabaseHeavenlyInfo(
       fortunesData.heavenly.elements,
     );
+    console.log('heavenlyElementData', heavenlyElementData);
     const earthlyElementData = await this.fetchDatabaseEarthlyInfo(
       fortunesData.earthly.elements,
     );
+    console.log('earthlyElementData', earthlyElementData);
 
     const response = {
       ...fortunesData,

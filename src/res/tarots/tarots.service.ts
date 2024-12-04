@@ -189,6 +189,11 @@ export class TarotsService {
     if (!savedCard) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
+
+    if (userId !== savedCard.user.id) {
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다.');
+    }
+
     await this.saveTarotMainTitleEntity.remove(savedCard);
 
     return 'Successful';

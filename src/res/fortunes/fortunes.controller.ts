@@ -1,6 +1,7 @@
 import { JwtAuthGuard } from '@/src/guards/jwt-auth.guard';
 import { AuthAndCsrfHeaders } from '@/src/utils/auth-csrf-headers.util';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import * as dayjs from 'dayjs';
 import { FortunesService } from '@res/fortunes/fortunes.service';
 import { Request } from 'express';
 import { GetTodayFortunesDto } from './dto/get-today-fortunes.dto';
@@ -39,12 +41,27 @@ export class FortunesController {
     const birthDate = userData.birth_date;
     const birthTime = userData.birth_time;
 
-    const birthHour = parseInt(birthTime.split(':')[0]);
-    const birthMinute = parseInt(birthTime.split(':')[1]);
+    if (!birthTime || !birthTime.includes(':')) {
+      throw new BadRequestException('유효한 생년월일 및 시간을 제공해주세요.');
+    }
+
+    // 1. birthDate와 birthTime을 합쳐 Date 객체 생성
+    const combinedDateTime = dayjs(`${birthDate} ${birthTime}`).toDate();
+
+    // 2. -32분 조정
+    const adjustedDateTime = dayjs(combinedDateTime)
+      .subtract(32, 'minute')
+      .toDate();
+
+    // 3. 조정된 Date 객체를 다시 날짜와 시간으로 분리
+    const adjustedBirthDate = dayjs(adjustedDateTime).format('YYYY-MM-DD');
+    const adjustedBirthTime = dayjs(adjustedDateTime).format('HH:mm:ss');
+
+    const [birthHour, birthMinute] = adjustedBirthTime.split(':').map(Number);
 
     const sandbarData = await this.fortunesService.getTodayForunes(
       userData,
-      birthDate,
+      adjustedBirthDate,
       birthHour,
       birthMinute,
     );

@@ -47,12 +47,26 @@ export class FortuneCalculationService {
   // 시간에 따른 지지 계산 함수
   private getTimeBranch(hour: number, minute: number): string | null {
     const targetTime = hour * 60 + minute;
+
     for (const time of timeBranches) {
       const [startHour, startMinute] = time.start.split(':').map(Number);
       const [endHour, endMinute] = time.end.split(':').map(Number);
+
       const startTime = startHour * 60 + startMinute;
-      const endTime = endHour * 60 + endMinute;
-      if (targetTime >= startTime && targetTime < endTime) {
+      let endTime = endHour * 60 + endMinute;
+
+      // 날짜 경계 처리
+      if (endTime < startTime) {
+        endTime += 1440; // 다음날로 이동
+      }
+
+      // targetTime이 경계를 넘어갔을 경우
+      let adjustedTargetTime = targetTime;
+      if (targetTime < startTime && endTime > 1440) {
+        adjustedTargetTime += 1440; // targetTime을 다음날로 이동
+      }
+
+      if (adjustedTargetTime >= startTime && adjustedTargetTime < endTime) {
         return time.branch;
       }
     }

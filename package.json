@@ -37,6 +37,7 @@
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.7",
     "csurf": "^1.10.0",
+    "dayjs": "^1.11.13",
     "express-session": "^1.18.1",
     "helmet": "^8.0.0",
     "holiday-kr": "^0.1.5",

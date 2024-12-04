@@ -69,7 +69,7 @@ export class TarotsController {
     @Param('savedCardId') savedCardId: number,
   ) {
     const { userId } = req.user;
-    console.log(userId, savedCardId);
+
     await this.tarotsService.cancelSavedTarotCard(userId, savedCardId);
     return createResponse(200, 'Successful');
   }

@@ -10,7 +10,6 @@ import { Request } from 'express';
 import { SavedUserTarotCardsEntity } from './entities/saved_user_tarot_cards.entity';
 import { SaveTarotMainTitleEntity } from './entities/saved_tarot_main_title.entity';
 import { UsersEntity } from '../users/entities/users.entity';
-import { TarotCardsEntity } from './entities/tarot_cards.entity';
 
 describe('TarotsController', () => {
   let tarotsController: TarotsController;
@@ -128,30 +127,16 @@ describe('TarotsController', () => {
         ],
       };
 
-      const savedCardsMock = [
-        {
-          id: 1,
-          card_id: 1,
-          main_title: '오늘의 타로',
-          sub_title: '애정운',
-          user_id: 1,
-          is_upright: true,
-          created_at: new Date(),
-          updated_at: new Date(),
-          card_interpretation: 'Sample interpretation',
-          card: { id: 1, name: 'The Fool' } as TarotCardsEntity,
-          mainTitle: {
-            id: 1,
-            title: '오늘의 타로',
-          } as SaveTarotMainTitleEntity,
-          user: req.user as UsersEntity,
-        } as unknown as SavedUserTarotCardsEntity,
-      ];
+      const savedCardsMock = {
+        id: 1,
+        title: 'title',
+        user: { id: 1 } as UsersEntity,
+        cards: [] as SavedUserTarotCardsEntity[],
+      } as SaveTarotMainTitleEntity;
 
       jest
         .spyOn(tarotsService, 'saveTarotCards')
         .mockResolvedValue({ savedCards: savedCardsMock });
-
       const result = await tarotsController.saveTarotCards(
         req,
         saveTarotCardDto,
