@@ -35,9 +35,6 @@ export class AuthController {
   @Get('csrf-token')
   async getCsrfToken(@Req() req: Request, @Res() res: Response) {
     const csrfToken = req.csrfToken(); // CSRF 토큰 생성
-    console.log('configService', this.configService.get('app.HTTP_ONLY'));
-    console.log('configService', this.configService.get('app.SECURE'));
-    console.log('configService', this.configService.get('app.SAME_SITE'));
     res.cookie('csrf-token', csrfToken, {
       httpOnly: false,
       secure: false,
@@ -154,8 +151,6 @@ export class AuthController {
   @CsrfHeaders('유저 존재 여부 확인')
   @Get('kakao/callback')
   async kakaoCallback(@Query('code') code: string) {
-    console.log('kakaoCallback');
-    console.log('accessToken', code);
     if (!code) {
       throw new BadRequestException('successful');
     }
@@ -166,11 +161,8 @@ export class AuthController {
       throw new BadRequestException('successful');
     }
 
-    console.log('accessToken', accessToken);
-
     // 2. 액세스 토큰으로 사용자 정보 가져오기
     const kakaoUser = await this.authService.getKakaoUserInfo(accessToken);
-    console.log('kakaoUser', kakaoUser);
 
     if (!kakaoUser) {
       throw new BadRequestException('not found kakao user');

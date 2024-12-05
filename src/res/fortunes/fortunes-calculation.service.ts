@@ -12,6 +12,7 @@ import {
   elementForBranch,
   twelveGodsTable,
   elementsTable,
+  firstSolarTerms,
 } from '@/src/define/fortune.type';
 import * as holidayKR from 'holiday-kr';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -93,11 +94,64 @@ export class FortuneCalculationService {
       birth.getMonth() + 1,
       birth.getDate(),
     );
-    const birthMonth = lunarDate.lunarMonth;
-    const monthPillar = monthPillarsTable[yearStem][birthMonth - 1];
+
+    console.log('yearStem', yearStem, 'birthDate', birthDate);
+    console.log('birth', birth);
+    console.log('lunarDate', lunarDate);
+
+    let lunarMonth = lunarDate.lunarMonth;
+    const lunarDay = lunarDate.lunarDay;
+
+    // 음력 날짜와 절기 기준으로 월 계산
+    for (const term of firstSolarTerms) {
+      if (lunarMonth === term.month && lunarDate.lunarDay >= term.startDay) {
+        break; // 현재 월 유지
+      } else if (lunarMonth === term.month && lunarDay < term.startDay) {
+        lunarMonth -= 1; // 이전 월로 이동
+        if (lunarMonth < 1) {
+          lunarMonth = 12; // 음력 1월 이전은 12월로
+        }
+        break;
+      }
+    }
+
+    const monthPillar = monthPillarsTable[yearStem][lunarMonth - 1];
+
     const monthStem = monthPillar.charAt(0);
     const monthBranch = monthPillar.charAt(1);
     return { monthStem, monthBranch };
+  }
+
+  private calculateTotalDays(baseDate: Date, targetDate: Date): number {
+    // 1. 생일년도 - 1 - 기준년도 + 1
+    const step1 = targetDate.getFullYear() - 1 - baseDate.getFullYear() + 1;
+
+    // 2. 1번 값 * 365
+    const step2 = step1 * 365;
+
+    // 3. 2번 값에서 윤년 개수 추가 (생일년도 - 1까지)
+
+    const step3 = Math.floor(step1 / 4);
+
+    // 4. 출생년도에 대한 누적일 계산 (1월부터 출생월까지)
+    const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+    const isLeapYear = (year: number) =>
+      (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+
+    if (isLeapYear(targetDate.getFullYear())) {
+      daysInMonth[1] = 29; // 윤년일 경우 2월 일수 수정
+    }
+
+    const step4 =
+      daysInMonth
+        .slice(0, targetDate.getMonth())
+        .reduce((sum, days) => sum + days, 0) + targetDate.getDate();
+
+    // 5. 최종 계산: 2번값 + 3번값 - 42 + 4번값
+    const totalDays = step2 + step3 - 42 + step4;
+
+    return totalDays;
   }
 
   // 일간 기둥 계산 함수
@@ -108,23 +162,40 @@ export class FortuneCalculationService {
   ) {
     const baseDate = new Date(1936, 1, 12);
     const targetDate = new Date(birthYear, birthMonth - 1, birthDay);
-    const days = Math.floor(
-      (targetDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24),
-    );
-    const ganIndex = days % 10;
-    const jiIndex = days % 12;
+    const totalDays = this.calculateTotalDays(baseDate, targetDate);
+
+    // 천간과 지지 계산
+    const ganIndex = totalDays % 10; // 천간은 10주기로 반복
+    const jiIndex = totalDays % 12; // 지지는 12주기로 반복
+
     const dayGan = heavenlyStems[ganIndex];
     const dayJi = earthlyBranches[jiIndex];
+
     return { dayGan, dayJi };
   }
 
   // 시간 기둥 계산 함수
   private calculateHourPillar(dayGan: string, hour: number, minute: number) {
-    const timeGanStart = timeGanBase[dayGan];
-    const timeGanIndex =
-      heavenlyStems.indexOf(timeGanStart) + (Math.floor(hour / 2) % 10);
-    const timeGan = heavenlyStems[timeGanIndex % 10];
-    const timeBranch = this.getTimeBranch(hour, minute);
+    console.log('dayGan', dayGan, 'hour', hour, 'minute', minute);
+
+    // 1. 천간 시작값 찾기
+    const timeGanStart = timeGanBase[dayGan]; // 일간 기준으로 시작 천간 결정
+    console.log('timeGanStart', timeGanStart);
+
+    const timeGanIndex = heavenlyStems.indexOf(timeGanStart); // 시작 천간의 인덱스
+    console.log('timeGanIndex', timeGanIndex);
+
+    // 2. 지지 찾기
+    const timeBranch = this.getTimeBranch(hour, minute); // 시각에 해당하는 지지 찾기
+    console.log('timeBranch', timeBranch);
+
+    // 3. 천간 계산 (시작 천간부터 지지 인덱스를 더해서 순환)
+    const branchIndex = timeBranches.findIndex(
+      (branch) => branch.branch === timeBranch,
+    );
+    const timeGan = heavenlyStems[(timeGanIndex + branchIndex) % 10]; // 천간 순환
+    console.log('timeGan', timeGan);
+
     return { timeGan, timeBranch };
   }
 
@@ -163,6 +234,7 @@ export class FortuneCalculationService {
     return twelveGodsTable[element][index];
   }
 
+  // 사주 계산 함수
   async calculateFourPillars(
     birthDate: string,
     birthHour: number,

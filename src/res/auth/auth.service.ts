@@ -164,8 +164,6 @@ export class AuthService {
   }
 
   async handleKakaoUser(kakaoUser: any) {
-    console.log(kakaoUser);
-
     const email = kakaoUser.kakao_account.email;
     const nickname = kakaoUser.properties.nickname;
     const avatar = kakaoUser.properties.profile_image;

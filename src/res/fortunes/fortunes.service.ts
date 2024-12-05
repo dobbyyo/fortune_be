@@ -23,6 +23,7 @@ import { SavedZodiacEntity } from './entities/saved_zodiac.entity';
 import { SavedSandbarsEntity } from './entities/saved_sandbars.entity';
 import { toSnakeCaseKeys } from '@/src/utils/lodash-change.util';
 import { DeleteSandbarDto } from './dto/delete-sandbar.dto';
+import { TodayFortuneType } from '@/src/types/fortune.interface';
 
 @Injectable()
 export class FortunesService {
@@ -78,7 +79,7 @@ export class FortunesService {
     return elementData;
   }
 
-  async getTodayForunes(
+  async getTodayFortunes(
     userData: UserResponse,
     birthDate: string,
     birthHour: number,
@@ -86,10 +87,12 @@ export class FortunesService {
   ) {
     const redisKey = `fortunesData:${userData.userId}`;
 
-    // Redis에서 캐시된 데이터가 있는지 확인
     const cachedData = await this.redisService.get(redisKey);
+
     if (cachedData) {
-      return { fortunesData: cachedData };
+      return {
+        fortunesData: (cachedData as TodayFortuneType).fortunesData,
+      };
     }
 
     const fortunesData =
@@ -98,16 +101,14 @@ export class FortunesService {
         birthHour,
         birthMinute,
       );
-    console.log('fortunesData', fortunesData);
-    // imgurl db에서 호출
+
+    // imgUrl db에서 호출
     const heavenlyElementData = await this.fetchDatabaseHeavenlyInfo(
       fortunesData.heavenly.elements,
     );
-    console.log('heavenlyElementData', heavenlyElementData);
     const earthlyElementData = await this.fetchDatabaseEarthlyInfo(
       fortunesData.earthly.elements,
     );
-    console.log('earthlyElementData', earthlyElementData);
 
     const response = {
       ...fortunesData,
@@ -138,11 +139,11 @@ export class FortunesService {
     };
 
     await this.redisService.set(redisKey, { fortunesData: response }, 3600);
-
+    console.log('response', response);
     return { fortunesData: response };
   }
 
-  async getTodayForunesExplanation(
+  async getTodayFortunesExplanation(
     userData: UserResponse,
     birthDate: string,
     birthHour: number,
@@ -154,7 +155,7 @@ export class FortunesService {
 
     // 캐시가 없을 경우 다시 계산하고 저장
     if (!fortunesData) {
-      fortunesData = await this.getTodayForunes(
+      fortunesData = await this.getTodayFortunes(
         userData,
         birthDate,
         birthHour,

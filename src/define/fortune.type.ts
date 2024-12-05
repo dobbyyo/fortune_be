@@ -871,3 +871,18 @@ export const elementsTable = {
   술: '토',
   해: '수',
 };
+
+export const firstSolarTerms = [
+  { name: '소한', month: 1, startDay: 5 },
+  { name: '입춘', month: 2, startDay: 4 },
+  { name: '경칩', month: 3, startDay: 5 },
+  { name: '청명', month: 4, startDay: 5 },
+  { name: '입하', month: 5, startDay: 5 },
+  { name: '망종', month: 6, startDay: 6 },
+  { name: '소서', month: 7, startDay: 7 },
+  { name: '입추', month: 8, startDay: 7 },
+  { name: '백로', month: 9, startDay: 7 },
+  { name: '한로', month: 10, startDay: 8 },
+  { name: '입동', month: 11, startDay: 7 },
+  { name: '대설', month: 12, startDay: 7 },
+];

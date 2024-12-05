@@ -57,9 +57,12 @@ export class FortunesController {
     const adjustedBirthDate = dayjs(adjustedDateTime).format('YYYY-MM-DD');
     const adjustedBirthTime = dayjs(adjustedDateTime).format('HH:mm:ss');
 
+    console.log('adjustedBirthDate', adjustedBirthDate);
+    console.log('adjustedBirthTime', adjustedBirthTime);
+
     const [birthHour, birthMinute] = adjustedBirthTime.split(':').map(Number);
 
-    const sandbarData = await this.fortunesService.getTodayForunes(
+    const sandbarData = await this.fortunesService.getTodayFortunes(
       userData,
       adjustedBirthDate,
       birthHour,
@@ -88,7 +91,7 @@ export class FortunesController {
     }
 
     const explanationData =
-      await this.fortunesService.getTodayForunesExplanation(
+      await this.fortunesService.getTodayFortunesExplanation(
         userData,
         birthDate,
         birthHour,

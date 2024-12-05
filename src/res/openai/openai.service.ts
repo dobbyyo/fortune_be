@@ -117,10 +117,11 @@ export class OpenaiService {
   }
 
   async getTodayFortunes(fortunesData: GetTodayFortunesType) {
+    console.log('fortunesData', fortunesData);
     const fortune = fortunesData.fortunesData;
 
     const prompt = `
-    1. 사용자 사주 정보:
+    1. 다음은 사용자 사주 정보입니다:
     {
       "천간에 대한 십성": {
         "년주": "${fortune.heavenlyStemTenGod.year}",
@@ -139,27 +140,8 @@ export class OpenaiService {
         "월주": "${fortune.earthly.month}, ${fortune.earthly.elements.baseElements.month}",
         "일주": "${fortune.earthly.day}, ${fortune.earthly.elements.baseElements.day}",
         "시주": "${fortune.earthly.hour}, ${fortune.earthly.elements.baseElements.hour}"
-      },
-      "지지에 대한 십성": {
-        "년주": "${fortune.earthlyBranchTenGod.year}",
-        "월주": "${fortune.earthlyBranchTenGod.month}",
-        "일주": "${fortune.earthlyBranchTenGod.day}",
-        "시주": "${fortune.earthlyBranchTenGod.hour}"
-      },
-      "12운성": {
-        "년주": "${fortune.tenStemTwelveStates.year}",
-        "월주": "${fortune.tenStemTwelveStates.month}",
-        "일주": "${fortune.tenStemTwelveStates.day}",
-        "시주": "${fortune.tenStemTwelveStates.hour}"
-      },
-      "12신살": {
-        "년주": "${fortune.twelveGod.year}",
-        "월주": "${fortune.twelveGod.month}",
-        "일주": "${fortune.twelveGod.day}",
-        "시주": "${fortune.twelveGod.hour}"
       }
     }
-    
     2. 위의 사주 정보를 활용하여 아래 질문에 대답해주세요:
       - 총운
       - 재물운
@@ -170,18 +152,17 @@ export class OpenaiService {
       - 행운을 가져오는 것들 예(김밥, 빨간색)
       - 행운의 코디 제안
     
-    3. JSON 형식으로 다음 포맷에 맞게 응답해주세요.
-    ### 출력 포맷 (JSON 형식):
-    {
-      "generalFortune": "총운 해석",
-      "wealthFortune": "재물운 해석",
-      "loveFortune": "연애운 해석",
-      "careerFortune": "사업운 해석",
-      "healthFortune": "건강운 해석",
-      "studyFortune": "학업운 해석",
-      "luckyElements": ["행운의 요소 1", "행운의 요소 2"],
-      "luckyOutfit": "행운의 코디 아이템 또는 색상 등"
-    }
+    3. **JSON 형식으로만 답변하세요. 아래 예제를 준수하세요:**
+      {
+        "generalFortune": "총운 해석",
+        "wealthFortune": "재물운 해석",
+        "loveFortune": "연애운 해석",
+        "careerFortune": "사업운 해석",
+        "healthFortune": "건강운 해석",
+        "studyFortune": "학업운 해석",
+        "luckyElements": ["행운의 요소 1", "행운의 요소 2"],
+        "luckyOutfit": "행운의 코디 아이템 또는 색상 등"
+      }
     `;
 
     const response = await this.openai.chat.completions.create({
@@ -191,8 +172,9 @@ export class OpenaiService {
         { role: 'user', content: prompt },
       ],
       response_format: { type: 'json_object' }, // JSON 형식을 강제
-      max_tokens: 500,
+      max_tokens: 1000, // 토큰 수 증가
     });
+
     const content = response.choices[0].message.content.trim();
     try {
       const sandbarData = JSON.parse(content);
@@ -217,29 +199,28 @@ export class OpenaiService {
     }
 
     const prompt = `
-      1. 사용자의 띠 정보:
-      {
-        "띠 이름": "${zodiacFortune.name}",
-        "띠 정보": "${zodiacFortune.info}",
-        "해당 띠의 연도들": "${yearList.join(', ')}",
-        "오늘 날짜": "${today}"
+    1. 사용자의 띠 정보:
+    {
+      "띠 이름": "${zodiacFortune.name}",
+      "띠 정보": "${zodiacFortune.info}",
+      "해당 띠의 연도들": [${yearList.join(', ')}],
+      "오늘 날짜": "${today}"
+    }
+    
+    2. 위의 띠 정보를 활용하여 오늘 날짜를 대입하여 아래 질문에 대답해주세요:
+      - ${zodiacFortune.name}의 특징에 대한 설명
+      - ${zodiacFortune.name}의 띠를 가진 사람들의 공통적인 특징
+      - 오늘 날짜와 해당 띠의 연도별 특징을 대입하여 오늘의 운세를 알려주세요
+    
+    3. JSON 형식으로 다음 포맷에 맞게 응답해주세요:
+    {
+      "zodiacGeneral": "해당 띠의 공통적인 설명",
+      "zodiacToday": "오늘 날짜를 대입한 ${zodiacFortune.name}에 대한 운세",
+      "yearlyFortunes": {
+        ${yearList.map((year) => `"${year}": "해당 연도에 속한 ${zodiacFortune.name} 띠의 특징"`).join(',\n')}
       }
-
-      2. 위의 띠 정보를 활용하여 오늘 날짜와 대입하여 아래 질문에 대답해주세요:
-        - ${zodiacFortune.name}의 특징에 대한 설명
-        - ${zodiacFortune.name}의 띠를 가진 사람들의 공통적인 특징
-        - 오늘 날짜와 해당 띠의 연도별 특징을 대입하여 오늘의 운세를 알려주세요
-
-      3. JSON 형식으로 다음 포맷에 맞게 응답해주세요.
-      ### 출력 포맷 (JSON 형식):
-      {
-        "zodiacGeneral": "해당 띠의 공통적인 설명",
-        "zodiacToday": "오늘 날짜를 대입한 ${zodiacFortune.name}에 대한 운세",
-        "yearlyFortunes": {
-          ${yearList.map((year) => `"${year}": "해당 연도에 속한 ${zodiacFortune.name} 띠의 특징"`).join(',\n')}
-        }
-      }
-      4. 강력: 정확한 JSON 형식으로 응답하세요.
+    }
+    4. 반드시 올바른 JSON 형식으로 응답해주세요. 문자열은 큰따옴표(")를 사용하며, JSON이 올바르지 않을 경우 요청이 실패로 간주됩니다.
     `;
 
     const response = await this.openai.chat.completions.create({
