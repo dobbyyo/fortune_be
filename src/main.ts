@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ConfigType } from '@nestjs/config';
 
@@ -23,6 +24,7 @@ async function bootstrap() {
   app.use(express.urlencoded({ extended: true })); // body-parser 설정
   app.use(cookieParser()); // 쿠키 파서 설정
   app.useGlobalPipes(new CustomValidationPipe()); // 전역 유효성 검사 파이프 등록
+
   app.enableCors({
     origin: 'http://localhost:3000',
     credentials: true,

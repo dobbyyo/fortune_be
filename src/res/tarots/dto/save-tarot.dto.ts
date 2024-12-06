@@ -6,9 +6,17 @@ import {
   IsBoolean,
   IsArray,
   ValidateNested,
+  IsNotEmpty,
+  IsNumber,
 } from 'class-validator';
 
 export class SaveTarotCardDto {
+  @ApiProperty({ description: 'userId', example: '1' })
+  @IsNotEmpty()
+  @IsNumber()
+  @Type(() => Number)
+  userId: number;
+
   @ApiProperty({
     description: '메인 타이틀 (예: 오늘의 타로)',
     example: '오늘의 타로',
@@ -55,4 +63,18 @@ export class TarotCardDetailDto {
   @ApiProperty({ description: '카드 해석', example: '...' })
   @IsString()
   cardInterpretation: string;
+}
+
+export class DeleteTarotCardDto {
+  @ApiProperty({ description: 'userId', example: '1' })
+  @IsNotEmpty()
+  @IsNumber()
+  @Type(() => Number)
+  userId: number;
+
+  @ApiProperty({ description: '저장된 타로 카드 ID', example: '1' })
+  @IsNotEmpty()
+  @IsNumber()
+  @Type(() => Number)
+  savedCardId: number;
 }

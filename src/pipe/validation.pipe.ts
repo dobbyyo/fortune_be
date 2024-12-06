@@ -16,9 +16,11 @@ export class CustomValidationPipe implements PipeTransform {
     }
 
     const object = plainToInstance(metatype, value); // value를 metatype으로 변환
+
     const errors = await validate(object, {
       whitelist: true, // (true로 설정하면 유효성 검사를 위한 데코레이터가 없는 속성은 무시됩니다.)
       transform: true, // (true로 설정하면 유효성 검사 전에 값을 변환합니다.)
+      forbidNonWhitelisted: true, // 허용되지 않는 필드를 에러로 처리
     }); // 변환된 object를 검증
 
     if (errors.length > 0) {
@@ -31,7 +33,7 @@ export class CustomValidationPipe implements PipeTransform {
       throw new BadRequestException(constraints); // 에러를 던짐
     }
 
-    return value;
+    return object;
   }
 
   private toValidate(metatype: unknown): boolean {

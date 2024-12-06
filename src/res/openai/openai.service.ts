@@ -117,7 +117,6 @@ export class OpenaiService {
   }
 
   async getTodayFortunes(fortunesData: GetTodayFortunesType) {
-    console.log('fortunesData', fortunesData);
     const fortune = fortunesData.fortunesData;
 
     const prompt = `

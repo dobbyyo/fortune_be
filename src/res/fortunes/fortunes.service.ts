@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, MoreThan, Repository } from 'typeorm';
 import { OpenaiService } from '../openai/openai.service';
 
 import { UserResponse } from '../auth/types/user.type';
@@ -139,7 +139,6 @@ export class FortunesService {
     };
 
     await this.redisService.set(redisKey, { fortunesData: response }, 3600);
-    console.log('response', response);
     return { fortunesData: response };
   }
 
@@ -240,6 +239,25 @@ export class FortunesService {
   }
 
   async saveFortunes(saveSandbarDto: SaveSandbarDto) {
+    const { userId, title } = saveSandbarDto;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 기존 데이터 확인
+    const existingSandbar = await this.sandbarRepository.findOne({
+      where: {
+        user_id: userId,
+        title: title,
+        updated_at: MoreThan(today), // 오늘 날짜 이후 업데이트된 데이터 확인
+      },
+    });
+
+    // 기존 데이터 삭제
+    if (existingSandbar) {
+      await this.sandbarRepository.remove(existingSandbar); // sandbar 삭제
+    }
+
     const todaysFortuneData = toSnakeCaseKeys(saveSandbarDto.todaysFortune);
     const zodiacFortuneData = toSnakeCaseKeys(saveSandbarDto.zodiacFortune);
     const starSignFortuneData = toSnakeCaseKeys(saveSandbarDto.starSignFortune);

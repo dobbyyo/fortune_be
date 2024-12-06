@@ -95,10 +95,6 @@ export class FortuneCalculationService {
       birth.getDate(),
     );
 
-    console.log('yearStem', yearStem, 'birthDate', birthDate);
-    console.log('birth', birth);
-    console.log('lunarDate', lunarDate);
-
     let lunarMonth = lunarDate.lunarMonth;
     const lunarDay = lunarDate.lunarDay;
 
@@ -176,25 +172,19 @@ export class FortuneCalculationService {
 
   // 시간 기둥 계산 함수
   private calculateHourPillar(dayGan: string, hour: number, minute: number) {
-    console.log('dayGan', dayGan, 'hour', hour, 'minute', minute);
-
     // 1. 천간 시작값 찾기
     const timeGanStart = timeGanBase[dayGan]; // 일간 기준으로 시작 천간 결정
-    console.log('timeGanStart', timeGanStart);
 
     const timeGanIndex = heavenlyStems.indexOf(timeGanStart); // 시작 천간의 인덱스
-    console.log('timeGanIndex', timeGanIndex);
 
     // 2. 지지 찾기
     const timeBranch = this.getTimeBranch(hour, minute); // 시각에 해당하는 지지 찾기
-    console.log('timeBranch', timeBranch);
 
     // 3. 천간 계산 (시작 천간부터 지지 인덱스를 더해서 순환)
     const branchIndex = timeBranches.findIndex(
       (branch) => branch.branch === timeBranch,
     );
     const timeGan = heavenlyStems[(timeGanIndex + branchIndex) % 10]; // 천간 순환
-    console.log('timeGan', timeGan);
 
     return { timeGan, timeBranch };
   }

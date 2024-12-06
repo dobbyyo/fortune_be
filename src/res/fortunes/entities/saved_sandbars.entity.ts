@@ -1,22 +1,18 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
-  BaseEntity,
 } from 'typeorm';
 import { UsersEntity } from '@res/users/entities/users.entity';
 import { SavedFortunesEntity } from '@/src/res/fortunes/entities/saved_fortunes.entity';
 import { SavedZodiacEntity } from '@res/fortunes/entities/saved_zodiac.entity';
 import { SavedStarEntity } from '@res/fortunes/entities/saved_star.entity';
+import { BaseEntity } from '@/src/common/entities/base.entity';
 
 @Entity('saved_sandbar')
 export class SavedSandbarsEntity extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
   @Column({ type: 'varchar', length: 255, nullable: true })
   title: string;
 

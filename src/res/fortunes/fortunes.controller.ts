@@ -57,9 +57,6 @@ export class FortunesController {
     const adjustedBirthDate = dayjs(adjustedDateTime).format('YYYY-MM-DD');
     const adjustedBirthTime = dayjs(adjustedDateTime).format('HH:mm:ss');
 
-    console.log('adjustedBirthDate', adjustedBirthDate);
-    console.log('adjustedBirthTime', adjustedBirthTime);
-
     const [birthHour, birthMinute] = adjustedBirthTime.split(':').map(Number);
 
     const sandbarData = await this.fortunesService.getTodayFortunes(
@@ -150,7 +147,7 @@ export class FortunesController {
     const userData = req.user;
 
     if (Number(userData.userId) !== Number(saveSandbarDto.userId)) {
-      return createResponse(400, 'error', '사용자 정보가 일치하지 않습니다');
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
     }
 
     const savedFortune =
@@ -168,7 +165,7 @@ export class FortunesController {
     const userData = req.user;
 
     if (Number(userData.userId) !== Number(deleteSandbarDto.userId)) {
-      return createResponse(400, 'error', '사용자 정보가 일치하지 않습니다');
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다.');
     }
 
     const deletedFortune =

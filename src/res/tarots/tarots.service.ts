@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TarotInterpretationDto } from './dto/interpret-tarot.dto';
 import { OpenaiService } from '../openai/openai.service';
 import { SavedUserTarotCardsEntity } from './entities/saved_user_tarot_cards.entity';
-import { SaveTarotCardDto } from './dto/save-tarot.dto';
+import { DeleteTarotCardDto, SaveTarotCardDto } from './dto/save-tarot.dto';
 import { SaveTarotMainTitleEntity } from './entities/saved_tarot_main_title.entity';
 
 @Injectable()
@@ -133,6 +133,8 @@ export class TarotsService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    console.log('today', today);
+
     // 특정 날짜와 사용자에 대해 이미 존재하는 mainTitle 엔티티 조회
     const existingMainTitle = await this.saveTarotMainTitleEntity.findOne({
       where: {
@@ -156,7 +158,7 @@ export class TarotsService {
     await this.saveTarotMainTitleEntity.save(mainTitleEntity);
 
     // 새 카드 저장
-    const savedCards = await Promise.all(
+    await Promise.all(
       cards.map(async (cardDetail) => {
         const { cardId, subTitle, isReversed, cardInterpretation } = cardDetail;
         const card = await this.tarotCardsRepository.findOneBy({ id: cardId });
@@ -174,23 +176,24 @@ export class TarotsService {
         return await this.savedUserTarotCardsRepository.save(savedCard);
       }),
     );
-    console.log(mainTitleEntity);
-    console.log('savedCards', savedCards);
 
     return { savedCards: mainTitleEntity };
   }
 
   // 카드 저장 취소
-  async cancelSavedTarotCard(userId: number, savedCardId: number) {
+  async cancelSavedTarotCard(deleteTarotCardDto: DeleteTarotCardDto) {
+    const { savedCardId, userId } = deleteTarotCardDto;
+
     const savedCard = await this.saveTarotMainTitleEntity.findOne({
-      where: { id: savedCardId, user: { id: userId } },
+      where: { id: Number(savedCardId), user: { id: userId } },
+      relations: ['user'],
     });
 
     if (!savedCard) {
       throw new NotFoundException('해당 카드를 찾을 수 없습니다.');
     }
 
-    if (userId !== savedCard.user.id) {
+    if (userId !== Number(savedCard.user.id)) {
       throw new BadRequestException('사용자 정보가 일치하지 않습니다.');
     }
 

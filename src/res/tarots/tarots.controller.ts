@@ -1,10 +1,10 @@
 import { CsrfHeaders } from '@/src/utils/csrf-headers.util';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  Param,
   Post,
   Query,
   Req,
@@ -17,7 +17,7 @@ import { createResponse } from '@/src/utils/create-response.util';
 import { TarotInterpretationDto } from './dto/interpret-tarot.dto';
 import { AuthAndCsrfHeaders } from '@/src/utils/auth-csrf-headers.util';
 import { JwtAuthGuard } from '@/src/guards/jwt-auth.guard';
-import { SaveTarotCardDto } from './dto/save-tarot.dto';
+import { DeleteTarotCardDto, SaveTarotCardDto } from './dto/save-tarot.dto';
 import { Request } from 'express';
 
 @ApiTags('Tarot')
@@ -52,10 +52,14 @@ export class TarotsController {
     @Req() req: Request,
     @Body() saveTarotCardDto: SaveTarotCardDto,
   ) {
-    const { userId } = req.user;
+    const userData = req.user;
+
+    if (Number(userData.userId) !== Number(saveTarotCardDto.userId)) {
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
+    }
 
     const savedCards = await this.tarotsService.saveTarotCards(
-      userId,
+      userData.userId,
       saveTarotCardDto,
     );
     return createResponse(200, 'Successful', savedCards);
@@ -63,14 +67,18 @@ export class TarotsController {
 
   @AuthAndCsrfHeaders('타로 카드 저장 취소')
   @UseGuards(JwtAuthGuard)
-  @Delete('cancle/:savedCardId')
+  @Delete('cancel')
   async cancelSavedTarotCard(
     @Req() req: Request,
-    @Param('savedCardId') savedCardId: number,
+    @Query() deleteTarotCardDto: DeleteTarotCardDto,
   ) {
-    const { userId } = req.user;
+    const userData = req.user;
 
-    await this.tarotsService.cancelSavedTarotCard(userId, savedCardId);
+    if (Number(userData.userId) !== Number(deleteTarotCardDto.userId)) {
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
+    }
+
+    await this.tarotsService.cancelSavedTarotCard(deleteTarotCardDto);
     return createResponse(200, 'Successful');
   }
 }
