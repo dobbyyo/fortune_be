@@ -2,10 +2,8 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   Param,
   Post,
-  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -25,8 +23,8 @@ export class NamingsController {
   constructor(private readonly namingsService: NamingsService) {}
 
   @CsrfHeaders('AI 작명')
-  @Get('draw')
-  async drawNaming(@Query() drawNamingDto: DrawNamingDto) {
+  @Post('draw')
+  async drawNaming(@Body() drawNamingDto: DrawNamingDto) {
     const { mainTitle, content } = drawNamingDto;
     const decodedMainTitle = decodeURIComponent(mainTitle);
     const decodedContent = decodeURIComponent(content);
@@ -43,8 +41,12 @@ export class NamingsController {
   async saveNaming(@Req() req: Request, @Body() saveNamingDto: SaveNamingDto) {
     const { userId } = req.user;
     const { mainTitle, namings } = saveNamingDto;
-    await this.namingsService.saveNaming(userId, mainTitle, namings);
-    return createResponse(200, 'successful');
+    const saveNaming = await this.namingsService.saveNaming(
+      userId,
+      mainTitle,
+      namings,
+    );
+    return createResponse(200, 'successful', saveNaming);
   }
 
   @AuthAndCsrfHeaders('작명 취소')

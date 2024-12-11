@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 
 export enum Language {
@@ -7,6 +8,11 @@ export enum Language {
 }
 
 export class UpdateLanguageDto {
+  @ApiProperty({ example: 1, description: 'User ID' })
+  @IsNotEmpty()
+  @Type(() => Number)
+  userId: number;
+
   @ApiProperty({ example: 'KOREAN', description: 'language' })
   @IsEnum(Language, { message: 'KOREAN or ENGLISH' })
   @IsNotEmpty()

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Patch, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from '@res/users/users.service';
 import { Request } from 'express';
@@ -30,6 +38,12 @@ export class UsersController {
     @Req() req: Request,
     @Body() updateUserDto: UpdateUserDto,
   ) {
+    const userData = req.user;
+
+    if (Number(userData.userId) !== Number(updateUserDto.userId)) {
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
+    }
+
     const myEmail = req.user.email;
     const updateUser = await this.usersService.updateMyInfo(
       myEmail,
@@ -45,11 +59,28 @@ export class UsersController {
     @Req() req: Request,
     @Body() updateLanguageDto: UpdateLanguageDto,
   ) {
+    const userData = req.user;
+
+    if (Number(userData.userId) !== Number(updateLanguageDto.userId)) {
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
+    }
+
     const myEmail = req.user.email;
     const updateUser = await this.usersService.updateLanguage(
       myEmail,
       updateLanguageDto,
     );
     return createResponse(200, 'successful', updateUser);
+  }
+
+  @AuthAndCsrfHeaders('나의 북마크 가져오기')
+  @UseGuards(JwtAuthGuard)
+  @Get('myBookmarks')
+  async getMyBookmarks(@Req() req: Request) {
+    const email = req.user.email;
+
+    const myBookmarks = await this.usersService.getMyBookmarks(email);
+
+    return createResponse(200, 'successful', myBookmarks);
   }
 }

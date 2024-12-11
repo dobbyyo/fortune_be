@@ -22,6 +22,7 @@ import { JwtAuthGuard } from '@/src/guards/jwt-auth.guard';
 import { createResponse } from '@/src/utils/create-response.util';
 import { AuthAndCsrfHeaders } from '@/src/utils/auth-csrf-headers.util';
 import { CsrfHeaders } from '@/src/utils/csrf-headers.util';
+import { OptionalJwtAuthGuard } from '@/src/guards/option-jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -128,12 +129,9 @@ export class AuthController {
   @AuthAndCsrfHeaders('로그아웃')
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(
-    @Headers('csrf-token') csrfToken: string,
-    @Headers('authorization') authorization: string,
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
+  async logout(@Req() req: Request, @Res() res: Response) {
+    console.log('logout userId:', (req.user as any).userId);
+
     await this.authService.logout((req.user as any).userId);
 
     // 쿠키에서 access_token 삭제
@@ -173,5 +171,20 @@ export class AuthController {
 
     // 4. 응답 생성
     return createResponse(200, 'successful', result);
+  }
+
+  //로그인 여부
+  @AuthAndCsrfHeaders('로그인 유무 체크')
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get('check')
+  async check(@Req() req: Request) {
+    const user = req.user;
+    if (!user) {
+      console.log('실행2');
+      return createResponse(401, 'unauthorized');
+    }
+
+    console.log('실행', user);
+    return createResponse(200, 'successful');
   }
 }

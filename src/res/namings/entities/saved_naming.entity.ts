@@ -1,18 +1,10 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { NamingEntity } from './naming.entity';
 import { UsersEntity } from '@res/users/entities/users.entity';
+import { BaseEntity } from '@/src/common/entities/base.entity';
 
 @Entity('saved_naming')
-export class SavedNamingEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class SavedNamingEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: false })
   name: string;
 

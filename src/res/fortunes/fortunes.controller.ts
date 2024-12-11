@@ -35,7 +35,7 @@ export class FortunesController {
     const userData = req.user;
 
     if (Number(userData.userId) !== Number(drawSandbarDto.userId)) {
-      return createResponse(400, 'error', '사용자 정보가 일치하지 않습니다');
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
     }
 
     const birthDate = userData.birth_date;
@@ -84,7 +84,7 @@ export class FortunesController {
     const birthMinute = parseInt(birthTime.split(':')[1]);
 
     if (Number(userData.userId) !== Number(drawSandbarDto.userId)) {
-      return createResponse(400, 'error', '사용자 정보가 일치하지 않습니다');
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
     }
 
     const explanationData =
@@ -109,7 +109,7 @@ export class FortunesController {
     const birthDate = userData.birth_date;
 
     if (Number(userData.userId) !== Number(drawSandbarDto.userId)) {
-      return createResponse(400, 'error', '사용자 정보가 일치하지 않습니다');
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
     }
 
     const zodiacData = await this.fortunesService.getZodiacFortunes(birthDate);
@@ -128,7 +128,7 @@ export class FortunesController {
     const birthDate = userData.birth_date;
 
     if (Number(userData.userId) !== Number(drawSandbarDto.userId)) {
-      return createResponse(400, 'error', '사용자 정보가 일치하지 않습니다');
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
     }
 
     const constellationData =

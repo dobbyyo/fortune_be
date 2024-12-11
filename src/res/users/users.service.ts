@@ -108,4 +108,40 @@ export class UsersService {
 
     return { myInfo: updatedLanguage };
   }
+
+  // 나의 북마크 가져오기
+  async getMyBookmarks(myEmail: string) {
+    const user = await this.userRepository.findOneBy({
+      email: myEmail,
+    });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const saveData = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: [
+        'savedCards',
+        'savedSandbars',
+        'savedDreamInterpretations',
+        'savedNamings',
+      ],
+    });
+
+    const {
+      savedCards,
+      savedSandbars,
+      savedDreamInterpretations,
+      savedNamings,
+    } = saveData;
+
+    return {
+      myBookmarks: {
+        savedCards,
+        savedSandbars,
+        savedDreamInterpretations,
+        savedNamings,
+      },
+    };
+  }
 }

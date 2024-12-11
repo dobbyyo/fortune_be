@@ -1,7 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateUserDto {
+  @ApiProperty({ example: 1, description: 'User ID' })
+  @IsNotEmpty()
+  @Type(() => Number)
+  userId: number;
+
   @ApiProperty({ example: '홍길동', description: 'Username' })
   @IsString()
   @IsNotEmpty()

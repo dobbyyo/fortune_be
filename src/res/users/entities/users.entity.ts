@@ -15,6 +15,7 @@ import { SavedUserTarotCardsEntity } from '@res/tarots/entities/saved_user_tarot
 import { SavedSandbarsEntity } from '@res/fortunes/entities/saved_sandbars.entity';
 import { SavedDreamInterpretationEntity } from '@res/dreams/entities/saved_dream_interpretation.entity';
 import { SavedNamingEntity } from '@res/namings/entities/saved_naming.entity';
+import { SaveTarotMainTitleEntity } from '../../tarots/entities/saved_tarot_main_title.entity';
 
 @Entity('users')
 export class UsersEntity extends BaseEntity {
@@ -57,6 +58,11 @@ export class UsersEntity extends BaseEntity {
   @OneToOne(() => UsersLanguageEntity)
   @JoinColumn()
   language: UsersLanguageEntity;
+
+  @OneToMany(() => SaveTarotMainTitleEntity, (mainTitle) => mainTitle.user, {
+    cascade: true,
+  })
+  savedTarotMainTitles: SaveTarotMainTitleEntity[];
 
   @OneToMany(() => SavedUserTarotCardsEntity, (savedCard) => savedCard.user, {
     cascade: true,

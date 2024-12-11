@@ -3,7 +3,6 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   Post,
   Query,
   Req,
@@ -24,8 +23,8 @@ export class DreamsController {
   constructor(private readonly dreamsService: DreamsService) {}
 
   @CsrfHeaders('꿈 해몽')
-  @Get('interpret')
-  async interpretDream(@Query() interpretDreamDto: InterpretDreamDto) {
+  @Post('interpret')
+  async interpretDream(@Body() interpretDreamDto: InterpretDreamDto) {
     const { title, description } = interpretDreamDto;
     const decodedTitle = decodeURIComponent(title); // 한글 디코딩
     const decodedDescription = decodeURIComponent(description); // 한글 디코딩
@@ -48,14 +47,14 @@ export class DreamsController {
     const { userId } = req.user;
     const { mainTitle, user_description, ai_interpretation } =
       saveInterpretedDreamDto;
-    await this.dreamsService.saveInterpretedDream(
+    const dreamSave = await this.dreamsService.saveInterpretedDream(
       userId,
       mainTitle,
       user_description,
       ai_interpretation,
     );
 
-    return createResponse(200, 'successful');
+    return createResponse(200, 'successful', dreamSave);
   }
 
   @AuthAndCsrfHeaders('꿈 해몽 저장 취소')

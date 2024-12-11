@@ -68,9 +68,27 @@ export class OpenaiService {
   async getNaming(mainTitle: string, content: string) {
     const prompt = `
     요청에 따라 이름을 작성하세요:
-    1. JSON 형식으로 결과를 반환합니다. { "name": "추천 성함(한자 이름일 경우 성함의 한자표현도 같이 표현)", "description": "설명" } 
-    2. ${content}에 맞게, ${mainTitle}이 사람이면 3글자로 성과 이름을 포함한 순수 한국 성함 (예: 김아름) 또는 한자 성함 (예: 강호동)으로 추천합니다.
-    3. 성은 '김'입니다. 이름은 한글과 한자 표현을 모두 포함하여 3글자로 구성해주세요.`;
+    1. ${content}에 맞게, ${mainTitle}을(를) 작성하세요.
+       - 사람이면 3글자의 순수 한국 성함 또는 한자 성함 (예: 김하람, 金夏藍)으로 추천하며, 이름은 성 '김, 이 등등'을 포함합니다.
+       - 예로 ${content}에 부모님 성이 있을 경우 성은 해당 성을 사용합니다.
+       - 사람이 아닐 경우(반려동물, 아이디어, 제품명, 상호명, 회사명)는 한국어 이름만 추천합니다.
+    2. 각 이름에 대한 설명을 포함하세요. 
+       - 사람이면 이름과 한자 표현에 대한 의미와 배경을 설명합니다.
+       - 다른 경우는 이름이 왜 적합한지 설명합니다.
+    3. **JSON 형식으로만 답변하세요. 아래 예제를 준수하세요:**
+    [
+      {
+        "name": "추천 성함",
+        "hanja": "한자 이름" || null,
+        "description": "설명"
+      },
+      {
+        "name": "추천 성함",
+        "hanja": "한자 이름" || null,
+        "description": "설명"
+      }
+    ]
+    `;
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -78,28 +96,44 @@ export class OpenaiService {
         { role: 'system', content: 'AI 작명 요청 시스템입니다.' },
         { role: 'user', content: prompt },
       ],
-      response_format: { type: 'json_object' }, // JSON 형식을 강제
-      max_tokens: 300,
+      max_tokens: 500,
     });
 
-    const namingText = response.choices[0].message.content.trim();
+    const resContent = response.choices[0].message.content.trim();
+    try {
+      const namingText = JSON.parse(resContent);
 
-    return namingText;
+      namingText.forEach((item) => {
+        if (mainTitle !== '사람') {
+          item.hanja = null;
+        }
+      });
+
+      return namingText;
+    } catch (error) {
+      console.error('JSON 파싱 오류:', error);
+      throw new Error('OpenAI가 유효한 JSON 응답을 반환하지 않았습니다.');
+    }
   }
 
   async getDreamInterpretation(title: string, description: string) {
     const prompt = `
+    꿈 해몽을 JSON 형식으로 작성해주세요. 아래 형식을 참고하세요:
     {
-        "
-         1. 주제는 ${title}, 내용은 ${description}인 꿈의 해석을 한국어로 작성해주세요.
-         1. 꿈의 해석을 한국어로 작성해주세요.
-         2. 말투를 재밌게 해줘요
-         3. 현실적이고 실용적인 해석을 해주세요
-         4. 300글자 이내로 작성해줘요
-         5. 꿈의 내용에 따라 다른 해석을 해주세요
-         6. 쉬운말 사용해주세요
-        "
-    }`;
+      "title": "${title}",
+      "description": "${description}",
+      "interpretation": "꿈 해몽 내용"
+    }
+  
+    조건:
+    1. 꿈의 주제는 "${title}"이고, 내용은 "${description}"입니다.
+    2. 꿈의 해석을 한국어로 작성해주세요.
+    3. 해석을 재미있고 유머러스한 말투로 작성해주세요.
+    4. 현실적이고 실용적인 관점을 포함해주세요.
+    5. 해석은 300자 이내로 작성해주세요.
+    6. 주제와 내용에 따라 적절한 해석을 작성해주세요.
+    7. 누구나 이해할 수 있도록 쉬운 표현을 사용해주세요.
+    `;
 
     const response = await this.openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -111,9 +145,13 @@ export class OpenaiService {
       max_tokens: 300,
     });
 
-    const interpretationText = response.choices[0].message.content.trim();
-
-    return interpretationText;
+    try {
+      const interpretationData = response.choices[0].message.content.trim();
+      return JSON.parse(interpretationData);
+    } catch (error) {
+      console.error('JSON 파싱 오류:', error);
+      throw new Error('OpenAI가 유효한 JSON 응답을 반환하지 않았습니다.');
+    }
   }
 
   async getTodayFortunes(fortunesData: GetTodayFortunesType) {
