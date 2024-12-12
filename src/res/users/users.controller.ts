@@ -3,7 +3,9 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -15,11 +17,61 @@ import { createResponse } from '@/src/utils/create-response.util';
 import { AuthAndCsrfHeaders } from '@/src/utils/auth-csrf-headers.util';
 import { UpdateLanguageDto } from './dto/update-language.dto';
 import { JwtAuthGuard } from '@/src/guards/jwt-auth.guard';
+import { MybookmarkFortuneDto } from './dto/mybookmark-fortune.dto';
+import { MybookmarkTarotsDto } from './dto/mybookmark-tarots.dto';
 
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @AuthAndCsrfHeaders('북마크 타로카드 상세정보 가져오기')
+  @UseGuards(JwtAuthGuard)
+  @Get('myBookmarks/tarotCardDetails')
+  async getMyBookmarksTarotCardDetails(
+    @Req() req: Request,
+    @Query() payload: MybookmarkTarotsDto,
+  ) {
+    const userData = req.user;
+    if (Number(userData.userId) !== Number(payload.userId)) {
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
+    }
+
+    const email = req.user.email;
+
+    const myBookmarksTarotCardDetails =
+      await this.usersService.getMyBookmarksTarotCardDetails(
+        email,
+        payload.tarotCardId,
+      );
+
+    return createResponse(200, 'successful', myBookmarksTarotCardDetails);
+  }
+
+  @AuthAndCsrfHeaders('북마크 오늘의 운세 상세정보 가져오기')
+  @UseGuards(JwtAuthGuard)
+  @Get('myBookmarks/fortuneDetails')
+  async getMyBookmarksFortuneDetails(
+    @Req() req: Request,
+    @Query() payload: MybookmarkFortuneDto,
+  ) {
+    const userData = req.user;
+    if (Number(userData.userId) !== Number(payload.userId)) {
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
+    }
+
+    const email = req.user.email;
+
+    const myBookmarksFortuneDetails =
+      await this.usersService.getMyBookmarksFortuneDetails(
+        email,
+        payload.fortuneId,
+        payload.zodiacId,
+        payload.startId,
+      );
+
+    return createResponse(200, 'successful', myBookmarksFortuneDetails);
+  }
 
   @AuthAndCsrfHeaders('나의 정보 가져오기')
   @UseGuards(JwtAuthGuard)
@@ -75,12 +127,59 @@ export class UsersController {
 
   @AuthAndCsrfHeaders('나의 북마크 가져오기')
   @UseGuards(JwtAuthGuard)
-  @Get('myBookmarks')
-  async getMyBookmarks(@Req() req: Request) {
+  @Get('myBookmarks/:userId')
+  async getMyBookmarks(@Req() req: Request, @Param('userId') userId: number) {
+    {
+      const userData = req.user;
+      if (Number(userData.userId) !== Number(userId)) {
+        throw new BadRequestException('사용자 정보가 일치하지 않습니다');
+      }
+
+      const email = req.user.email;
+
+      const myBookmarks = await this.usersService.getMyBookmarks(email);
+
+      return createResponse(200, 'successful', myBookmarks);
+    }
+  }
+
+  @AuthAndCsrfHeaders('북마크 꿈 해몽 상세정보 가져오기')
+  @UseGuards(JwtAuthGuard)
+  @Get('myBookmarks/dreamDetails/:userId')
+  async getMyBookmarksDreamDetails(
+    @Req() req: Request,
+    @Param('userId') userId: number,
+  ) {
+    const userData = req.user;
+    if (Number(userData.userId) !== Number(userId)) {
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
+    }
+
     const email = req.user.email;
 
-    const myBookmarks = await this.usersService.getMyBookmarks(email);
+    const myBookmarksDreamDetails =
+      await this.usersService.getMyBookmarksDreamDetails(email);
 
-    return createResponse(200, 'successful', myBookmarks);
+    return createResponse(200, 'successful', myBookmarksDreamDetails);
+  }
+
+  @AuthAndCsrfHeaders('북마크 작명 상세정보 가져오기')
+  @UseGuards(JwtAuthGuard)
+  @Get('myBookmarks/namingDetails/:userId')
+  async getMyBookmarksNamingDetails(
+    @Req() req: Request,
+    @Param('userId') userId: number,
+  ) {
+    const userData = req.user;
+    if (Number(userData.userId) !== Number(userId)) {
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
+    }
+
+    const email = req.user.email;
+
+    const myBookmarksNamingDetails =
+      await this.usersService.getMyBookmarksNamingDetails(email);
+
+    return createResponse(200, 'successful', myBookmarksNamingDetails);
   }
 }

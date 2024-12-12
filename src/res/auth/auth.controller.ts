@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   Query,
+  Param,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
@@ -22,6 +23,7 @@ import { JwtAuthGuard } from '@/src/guards/jwt-auth.guard';
 import { createResponse } from '@/src/utils/create-response.util';
 import { AuthAndCsrfHeaders } from '@/src/utils/auth-csrf-headers.util';
 import { CsrfHeaders } from '@/src/utils/csrf-headers.util';
+import { RedisService } from '../redis/redis.service';
 import { OptionalJwtAuthGuard } from '@/src/guards/option-jwt-auth.guard';
 
 @ApiTags('Auth')
@@ -30,16 +32,20 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
   ) {}
 
   @ApiOperation({ summary: 'CSRF 토큰 발급' })
   @Get('csrf-token')
   async getCsrfToken(@Req() req: Request, @Res() res: Response) {
     const csrfToken = req.csrfToken(); // CSRF 토큰 생성
+
     res.cookie('csrf-token', csrfToken, {
-      httpOnly: false,
-      secure: false,
-      sameSite: 'lax',
+      httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
+      secure: this.configService.get<boolean>('app.SECURE'),
+      sameSite:
+        this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
+        'lax',
       // this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
       // 'lax',
     });
@@ -64,24 +70,24 @@ export class AuthController {
     const { accessToken, refreshToken } = await this.authService.login(user);
 
     res.cookie('access_token', accessToken, {
-      httpOnly: false,
-      secure: false,
-      sameSite: 'lax',
-      // httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
-      // secure: this.configService.get<boolean>('app.SECURE'),
-      // sameSite:
-      //   this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
-      //   'lax',
+      // httpOnly: false,
+      // secure: false,
+      // sameSite: 'lax',
+      httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
+      secure: this.configService.get<boolean>('app.SECURE'),
+      sameSite:
+        this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
+        'lax',
     });
     res.cookie('refresh_token', refreshToken, {
-      httpOnly: false,
-      secure: false,
-      sameSite: 'lax',
-      // httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
-      // secure: this.configService.get<boolean>('app.SECURE'),
-      // sameSite:
-      //   this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
-      //   'lax',
+      // httpOnly: false,
+      // secure: false,
+      // sameSite: 'lax',
+      httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
+      secure: this.configService.get<boolean>('app.SECURE'),
+      sameSite:
+        this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
+        'lax',
     });
 
     return res.status(200).json(
@@ -130,12 +136,17 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Req() req: Request, @Res() res: Response) {
-    console.log('logout userId:', (req.user as any).userId);
-
     await this.authService.logout((req.user as any).userId);
 
     // 쿠키에서 access_token 삭제
     res.clearCookie('access_token', {
+      httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
+      secure: this.configService.get<boolean>('app.SECURE'),
+      sameSite:
+        this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
+        'lax',
+    });
+    res.clearCookie('refresh_token', {
       httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
       secure: this.configService.get<boolean>('app.SECURE'),
       sameSite:
@@ -180,11 +191,51 @@ export class AuthController {
   async check(@Req() req: Request) {
     const user = req.user;
     if (!user) {
-      console.log('실행2');
+      return createResponse(401, 'unauthorized');
+    }
+    const isRevoked = await this.redisService.get(`token:${user['userId']}`);
+    if (!isRevoked) {
       return createResponse(401, 'unauthorized');
     }
 
-    console.log('실행', user);
     return createResponse(200, 'successful');
+  }
+
+  @AuthAndCsrfHeaders('회원 탈퇴')
+  @UseGuards(JwtAuthGuard)
+  @Post('withdrawal/:userId')
+  async withdrawal(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param('userId') userId: number,
+  ) {
+    const userData = req.user;
+
+    if (Number(userData.userId) !== Number(userId)) {
+      throw new BadRequestException('사용자 정보가 일치하지 않습니다');
+    }
+
+    const email = userData.email;
+
+    await this.authService.withdrawal(email, userData.userId);
+
+    await this.authService.logout(userData.userId);
+
+    res.clearCookie('access_token', {
+      httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
+      secure: this.configService.get<boolean>('app.SECURE'),
+      sameSite:
+        this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
+        'lax',
+    });
+    res.clearCookie('refresh_token', {
+      httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
+      secure: this.configService.get<boolean>('app.SECURE'),
+      sameSite:
+        this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||
+        'lax',
+    });
+
+    return res.status(200).json(createResponse(200, 'successful'));
   }
 }

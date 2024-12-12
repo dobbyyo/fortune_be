@@ -16,7 +16,4 @@ export class SavedZodiacEntity {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   year_of_birth: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  iamge_url: string;
 }

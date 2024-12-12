@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -113,10 +114,8 @@ export class AuthService {
   }
 
   async logout(userId: number) {
-    console.log('logout userId:', userId);
     await this.redisService.del(`token:${userId}`);
     await this.redisService.del(`refreshToken:${userId}`);
-
     return { message: 'successful' };
   }
 
@@ -193,5 +192,18 @@ export class AuthService {
         avatar,
       };
     }
+  }
+
+  async withdrawal(email: string, userId: number) {
+    // Check if the user exists
+    const user = await this.validateUserByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.usersService.deleteUser(userId);
+
+    return { message: 'Successful' };
   }
 }

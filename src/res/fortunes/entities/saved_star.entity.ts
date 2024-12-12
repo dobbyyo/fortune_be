@@ -15,8 +15,5 @@ export class SavedStarEntity {
   star_sub_description: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  iamge_url: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
   year: string;
 }

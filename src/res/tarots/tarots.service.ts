@@ -133,8 +133,6 @@ export class TarotsService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    console.log('today', today);
-
     // 특정 날짜와 사용자에 대해 이미 존재하는 mainTitle 엔티티 조회
     const existingMainTitle = await this.saveTarotMainTitleEntity.findOne({
       where: {
