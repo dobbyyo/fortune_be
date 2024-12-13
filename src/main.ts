@@ -26,7 +26,7 @@ async function bootstrap() {
   app.useGlobalPipes(new CustomValidationPipe()); // 전역 유효성 검사 파이프 등록
 
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: ['https://fortunescape.co.kr', 'http://localhost:3000'],
     credentials: true,
   });
   app.use(helmet());

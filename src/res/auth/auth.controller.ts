@@ -41,7 +41,8 @@ export class AuthController {
     const csrfToken = req.csrfToken(); // CSRF 토큰 생성
 
     res.cookie('csrf-token', csrfToken, {
-      httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
+      httpOnly: false,
+      // httpOnly: this.configService.get<boolean>('app.HTTP_ONLY'),
       secure: this.configService.get<boolean>('app.SECURE'),
       sameSite:
         this.configService.get<'lax' | 'strict' | 'none'>('app.SAME_SITE') ||

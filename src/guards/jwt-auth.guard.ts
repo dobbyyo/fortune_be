@@ -21,7 +21,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    const token = request.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies['access_token'];
+    if (!token) {
+      throw new UnauthorizedException('JWT 토큰이 존재하지 않습니다.');
+    }
+
+    // const token = request.get('authorization')?.replace('Bearer ', '');
     // Redis에서 토큰을 가져와서 검증
     const redisToken = await this.redisService.get(`token:${user.userId}`);
 
