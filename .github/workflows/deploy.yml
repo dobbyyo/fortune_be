@@ -1,29 +1,27 @@
-name: Deploy # Workflow 이름
-on: # Event 감지
+name: Deploy Backend
+
+on:
   push:
     branches:
-      - master # 해당 브랜치의 푸쉬가 일어날 때 CI/CD를 진행하겠다는 뜻
+      - main # main 브랜치 푸시 시 실행
+
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-20.04
     steps:
-      - name: Checkout source code. # Repo checkout
+      - name: Checkout source code
         uses: actions/checkout@v2
 
-      - name: Check Node v # Node v 확인
-        run: node -v
+      - name: Install dependencies
+        run: npm install
 
-      - name: Install Dependencies # 의존 파일 설치
-        run: yarn install --frozen-lockfile
-
-      - name: Build # React Build
-        run: yarn build
+      - name: Build backend
+        run: npm run build
         env:
-          CI: ''
+          NODE_ENV: production
 
-      - name: zip create
-        # zip 파일을 만듭니다(파일명은 자유, 대신 아래 workflow에 적을 파일명과 동일하게 맞춰주세요).
-        run: zip -qq -r ./build-fe.zip .
+      - name: Zip dist folder
+        run: zip -qq -r ./build-be.zip ./dist
         shell: bash
 
       - name: Configure AWS credentials
@@ -33,16 +31,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Upload to S3 # Upload build file to S3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          aws s3 cp --region ap-northeast-2 ./build-fe.zip s3://fortune-github-action-s3-bucket/build-fe.zip
+      - name: Upload to S3
+        run: aws s3 cp ./build-be.zip s3://your-s3-bucket-name/build-be.zip --region ap-northeast-2
 
-      - name: Deploy # Deploy to EC2
-        run: aws deploy create-deployment
-          --application-name fortune-codeDepoly-application
-          --deployment-config-name CodeDeployDefault.AllAtOnce
-          --deployment-group-name fortune-group
-          --s3-location bucket=fortune-github-action-s3-bucket,key=build-fe.zip,bundleType=zip
+      - name: Deploy
+        run: aws deploy create-deployment \
+          --application-name your-backend-app \
+          --deployment-group-name your-deployment-group \
+          --s3-location bucket=your-s3-bucket-name,key=build-be.zip,bundleType=zip
