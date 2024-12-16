@@ -53,6 +53,8 @@ import { SavedStarEntity } from './res/fortunes/entities/saved_star.entity';
 import { SavedZodiacEntity } from './res/fortunes/entities/saved_zodiac.entity';
 import { SpringDatesEntity } from './res/fortunes/entities/spring.entity';
 import kakaoConfig from './config/kakao.config';
+import { ShareTarotCardsEntity } from './res/tarots/entities/share_tarot_cards.entity';
+import { ShareTarotMainTitleEntity } from './res/tarots/entities/shared_tarot_main_title.entity';
 
 @Module({
   imports: [
@@ -113,6 +115,8 @@ import kakaoConfig from './config/kakao.config';
           WebInformationEntity,
           SaveTarotMainTitleEntity,
           SpringDatesEntity,
+          ShareTarotCardsEntity,
+          ShareTarotMainTitleEntity,
         ],
         migrations: configService.get<string[]>('database.migrations'), // 마이그레이션 경로 설정
         migrationsTableName: configService.get<string>(

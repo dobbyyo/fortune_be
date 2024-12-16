@@ -11,6 +11,9 @@ import { OpenaiService } from '../openai/openai.service';
 import { SavedUserTarotCardsEntity } from './entities/saved_user_tarot_cards.entity';
 import { DeleteTarotCardDto, SaveTarotCardDto } from './dto/save-tarot.dto';
 import { SaveTarotMainTitleEntity } from './entities/saved_tarot_main_title.entity';
+import { ShareTarotCardDto } from './dto/share-tarot.dto';
+import { ShareTarotCardsEntity } from './entities/share_tarot_cards.entity';
+import { ShareTarotMainTitleEntity } from './entities/shared_tarot_main_title.entity';
 
 @Injectable()
 export class TarotsService {
@@ -21,6 +24,11 @@ export class TarotsService {
     private readonly savedUserTarotCardsRepository: Repository<SavedUserTarotCardsEntity>,
     @InjectRepository(SaveTarotMainTitleEntity)
     private readonly saveTarotMainTitleEntity: Repository<SaveTarotMainTitleEntity>,
+    @InjectRepository(ShareTarotCardsEntity)
+    private readonly shareTarotCardsRepository: Repository<ShareTarotCardsEntity>,
+    @InjectRepository(ShareTarotMainTitleEntity)
+    private readonly shareTarotMainTitleRepository: Repository<ShareTarotMainTitleEntity>,
+
     private readonly openaiService: OpenaiService,
   ) {}
   private getSubTitlesByMainTitle(mainTitle: string): string[] | null {
@@ -198,5 +206,37 @@ export class TarotsService {
     await this.saveTarotMainTitleEntity.remove(savedCard);
 
     return 'Successful';
+  }
+
+  // 카드 공유
+  async shareTarotCard(shareTarotCardDto: ShareTarotCardDto) {
+    const { mainTitle, cards } = shareTarotCardDto;
+
+    const mainTitleEntity = this.shareTarotMainTitleRepository.create({
+      title: mainTitle,
+    });
+    await this.shareTarotMainTitleRepository.save(mainTitleEntity);
+
+    await Promise.all(
+      cards.map(async (cardDetail) => {
+        const { cardId, subTitle, isReversed, cardInterpretation } = cardDetail;
+        const card = await this.tarotCardsRepository.findOneBy({ id: cardId });
+
+        if (!card) {
+          throw new NotFoundException(`Card with ID ${cardId} not found`);
+        }
+
+        const shareCard = this.shareTarotCardsRepository.create({
+          sub_title: subTitle,
+          card_id: cardId,
+          is_upright: !isReversed,
+          card_interpretation: cardInterpretation,
+          mainTitle: mainTitleEntity,
+        });
+        return await this.shareTarotCardsRepository.save(shareCard);
+      }),
+    );
+
+    return { shareCards: mainTitleEntity };
   }
 }
