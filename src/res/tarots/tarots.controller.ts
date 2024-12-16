@@ -5,6 +5,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Post,
   Query,
   Req,
@@ -83,11 +84,18 @@ export class TarotsController {
     return createResponse(200, 'Successful');
   }
 
-  @AuthAndCsrfHeaders('타로카드 공유')
+  @AuthAndCsrfHeaders('타로카드 공유 하기')
   @Post('share')
   async shareTarotCard(@Body() saveTarotCardDto: ShareTarotCardDto) {
     const shareCards =
       await this.tarotsService.shareTarotCard(saveTarotCardDto);
+    return createResponse(200, 'Successful', shareCards);
+  }
+
+  @AuthAndCsrfHeaders('타로카드 공유 보기')
+  @Get('share/:tarotId')
+  async getShareTarotCard(@Param('tarotId') tarotId: number) {
+    const shareCards = await this.tarotsService.getSharedTarotCards(tarotId);
     return createResponse(200, 'Successful', shareCards);
   }
 }

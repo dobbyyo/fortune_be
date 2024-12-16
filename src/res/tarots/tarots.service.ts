@@ -239,4 +239,15 @@ export class TarotsService {
 
     return { shareCards: mainTitleEntity };
   }
+
+  async getSharedTarotCards(tarotId: number) {
+    const shareTarotCards = await this.shareTarotMainTitleRepository.findOne({
+      where: { id: tarotId },
+      relations: ['cards', 'cards.card'],
+    });
+
+    console.log(shareTarotCards);
+
+    return { shareCards: shareTarotCards };
+  }
 }
